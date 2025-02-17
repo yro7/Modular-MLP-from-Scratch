@@ -28,7 +28,7 @@ public class Layer {
         System.out.println("Size " + n);
         for(int i = 0; i < n; i++){
             Neuron neuronI = this.getNeuron(i);
-            System.out.println("Neuron " + i + " W/B : " + neuronI.getWeight() + " / " + neuronI.getBias());
+            System.out.println("Neuron " + i + " W/B : " + neuronI.getWeights() + " / " + neuronI.getBias());
         }
     }
 
@@ -39,5 +39,19 @@ public class Layer {
 
     public void initialize(int previousLayerSize, int layerSize){
         this.getNeurons().forEach(n -> n.initialize(previousLayerSize, layerSize));
+    }
+
+    /**
+     * Pour chaque neurone dans la couche, calcule l'activation en fonction des activations de la couche précédente.
+     * @param activationsOfPreviousLayer Le vecteur d'activation de la couche précédente
+     * @return Le nouveau vecteur d'activation de cette couche.
+     */
+    public ActivationVector computeActivationVectorOfPreviousLayer(ActivationVector activationsOfPreviousLayer) {
+        ActivationVector newActivationVector = new ActivationVector();
+        for(Neuron neuron : this.getNeurons()){
+            double activation = neuron.feedPreviousLayer(activationsOfPreviousLayer);
+            newActivationVector.add(activation);
+        }
+        return newActivationVector;
     }
 }
