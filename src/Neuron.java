@@ -58,10 +58,11 @@ public class Neuron {
     public void initialize(int previousLayerSize, int layerSize){
         double bias = getRandomBias(previousLayerSize, layerSize);
         List<Double> weights = new ArrayList<>();
+        // Pour chaque neurone de la couche précédent, on initialise un poids aléatoire
+        // selon la fonction d'activation du réseau.
         for(int i = 0; i < previousLayerSize; i++){
-            weights.add(this.getRandomBias(previousLayerSize, layerSize));
+            weights.add(this.getRandomWeight(previousLayerSize, layerSize));
         }
-        double weight = getRandomWeight(previousLayerSize, layerSize);
         this.bias = bias;
         this.weights = weights;
     }
@@ -75,4 +76,7 @@ public class Neuron {
         return this.getActivationFunction().initializationFunction.getRandomWeight.apply(numberOfInputs, layerSize);
     }
 
+    public List<Double> getWeights(){
+        return this.weights;
+    }
 }
