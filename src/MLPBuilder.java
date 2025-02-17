@@ -7,7 +7,7 @@ public class MLPBuilder {
     private final int dimInput;
     private final int previousLayerSize;
 
-    public MLPBuilder(int dimInput){
+    public MLPBuilder(int dimInput) {
         this.dimInput = dimInput;
         this.previousLayerSize = dimInput;
     }

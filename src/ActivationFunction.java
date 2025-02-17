@@ -22,3 +22,4 @@ public enum ActivationFunction {
         return initializationFunction;
     }
 }
+
