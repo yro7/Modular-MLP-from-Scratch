@@ -40,20 +40,42 @@ public class ActivationVector extends Vector<Double> {
     }
 
     /**
-     * Applique une même fonction à chaque élément du vecteur.
+     * Renvoie un nouveau vecteur dont chaque composante est le résultat
+     * de la fonction appliqué au composant du vecteur initial.
      * C'est une opération intermédiaire.
      * @param function la fonction à appliquer
-     * @return
+     * @return le nouveau vecteur d'activation.
      */
     public ActivationVector applyFunction(Function<Double,Double> function){
-        this.
+        ActivationVector res = new ActivationVector();
+        this.forEach(d -> res.add(function.apply(d)));
+        return res;
     }
 
-    /** Applique
+    /** Renvoie un nouveau vecteur dont chaque composante est
+     * le logarithme népérien (log base e) de l'ancien;
+     * C'est une opération intermédiaire.
+     * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
+     */
+    public ActivationVector log(){
+        return this.applyFunction(Math::log);
+    }
+
+    /** Renvoie un nouveau vecteur dont chaque composante est
+     * le cosinus hyperbolique de l'ancien;
      * C'est une opération intermédiaire.
      * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
      */
     public ActivationVector cosh(){
-        this.
+        return this.applyFunction(Math::cosh);
+    }
+
+    /** Renvoie un nouveau vecteur dont chaque composante est
+     * le carré de l'ancien;
+     * C'est une opération intermédiaire.
+     * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
+     */
+    public ActivationVector square(){
+        return this.applyFunction(d -> Math.pow(d,2));
     }
 }
