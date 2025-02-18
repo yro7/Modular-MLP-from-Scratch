@@ -3,15 +3,14 @@ public class Main {
         System.out.println("Hello, World!");
 
         MLP mlpTest = MLP.builder(4)
-                        .addLayer(2, ActivationFunction.ReLU)
-                        .addLayer(4, ActivationFunction.TanH)
-                        .addLayer(4, ActivationFunction.TanH)
-                        .addLayer(2, ActivationFunction.ReLU)
+                        .addLayer(1, ActivationFunction.ReLU)
                         .build();
 
         mlpTest.print();
 
-        System.out.println("Goodbye, World!");
+        ActivationVector res = mlpTest.feedForward(ActivationVector.of(1.0, 2.0, 3.0, 4.0));
+
+        System.out.println("Res : " + res);
 
     }
 
