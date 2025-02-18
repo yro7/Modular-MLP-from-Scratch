@@ -20,24 +20,40 @@ public class MLP {
      */
 
     public ActivationVector feedForward(ActivationVector input){
-        // TODO Custom Annotation pour forcer l'usage de la bonne taille à la compilation (et pas juste runtime)
-        assert(input.size() == dimInput);
+        // TODO Custom Annotation pour forcer l'usage de la bonne taille à la compilation (et pas juste au runtime)
+        assert(input.size() == dimInput) : "Erreur : dim d'entrée attendue = " + dimInput + " , obtenue : " + input.size() + ".";
         ActivationVector activationsOfPreviousLayer = input;
         // Pour chaque couche, on calcule un nouveau vecteur d'activations à partir du précédent
         // Et on l'envoie à la prochaine couche.
+        int i = 0;
         for(Layer layer : layers) {
+
+            System.out.println("Activation de la couche n°" + i + " : " + activationsOfPreviousLayer);
             activationsOfPreviousLayer = layer.computeActivationVectorOfPreviousLayer(activationsOfPreviousLayer);
+            i++;
         }
         return activationsOfPreviousLayer;
     }
 
+
     /**
-     * Calcule la fonction coût du réseau de neurone sur une certaine entrée.
+     * Calcule le résultat d'une du réseau de neurones sur une certaine entrée {@link ActivationVector}.
      * @param input Le {@link ActivationVector} dont on calcule le coût
      * @return le coût associé
      */
-    public double computeLoss(ActivationVector input){
+    public double computeLoss(ActivationVector input, ActivationVector expectedOutput, LossFunction lossFunction){
+        ActivationVector networkOutput = feedForward(input);
+        System.out.println("Network output : " + networkOutput);
+        return lossFunction.apply(networkOutput, expectedOutput);
+    }
 
+    /**
+     * Calcule la fonction coût {@link LossFunction#MSE} du réseau de neurones sur une certaine entrée {@link ActivationVector}.
+     * @param input Le {@link ActivationVector} dont on calcule le coût
+     * @return le coût associé
+     */
+    public double computeLoss(ActivationVector input, ActivationVector expectedOutput) {
+        return computeLoss(input, expectedOutput, LossFunction.MSE);
     }
 
     public static MLPBuilder builder(int dimInput){

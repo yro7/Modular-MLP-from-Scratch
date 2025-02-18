@@ -7,10 +7,11 @@ public class Main {
                         .build();
 
         mlpTest.print();
+        ActivationVector testVector4 = ActivationVector.of(1.0, 2.0, 3.0, 4.0);
+        ActivationVector testVector1 = ActivationVector.of(1.0);
 
-        ActivationVector res = mlpTest.feedForward(ActivationVector.of(1.0, 2.0, 3.0, 4.0));
-
-        System.out.println("Res : " + res);
+        double loss = mlpTest.computeLoss(testVector4, testVector1);
+        System.out.println("Loss : " + loss);
 
     }
 
