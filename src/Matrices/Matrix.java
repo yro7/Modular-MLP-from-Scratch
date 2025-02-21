@@ -152,8 +152,6 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     // TODO optimiser à fond la multiplication
     public T multiply(Matrix<?> matrix){
-        this.print();
-        matrix.print();
         assert(this.getNumberOfColumns() == matrix.getNumberOfRows()) : "Matrices incompatibles pour un produit AxB :"
                 + " Nombre de colonnes de A : " + this.getNumberOfColumns()
                 + " Nombre de lignes de B : " + matrix.getNumberOfRows();
@@ -183,18 +181,18 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @return une nouvelle matrice produit des 2.
      */
     public T multiplyAtRight(Matrix<?> matrix) {
-        assert(this.getNumberOfColumns() == matrix.getNumberOfRows()) : "Matrices incompatibles pour un produit AxB :"
+        assert(matrix.getNumberOfColumns() == this.getNumberOfRows()) : "Matrices incompatibles pour un produit AxB :"
                 + " Nombre de colonnes de A : " + this.getNumberOfColumns()
                 + " Nombre de lignes de B : " + matrix.getNumberOfRows();
 
-        int newNumberOfRows = this.getNumberOfRows();
-        int newNumberOfColumns = matrix.getNumberOfColumns();
+        int newNumberOfRows = matrix.getNumberOfRows();
+        int newNumberOfColumns = this.getNumberOfColumns();
         T newMatrix = createInstance(newNumberOfRows, newNumberOfColumns);
 
         newMatrix.applyToElements((i,j) -> {
             double sum = 0.0;
-            for(int k = 0; k < this.getNumberOfColumns(); k++) {
-                sum += this.getData()[i][k] * matrix.getData()[k][j];
+            for(int k = 0; k < this.getNumberOfRows(); k++) {
+                sum += matrix.getData()[i][k] * this.getData()[k][j];
             }
             newMatrix.getData()[i][j] = sum;
         });
