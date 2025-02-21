@@ -36,8 +36,12 @@ public class Layer {
 
     public void print() {
         System.out.println("Activation function : " + this.getActivationFunction());
+        System.out.println("Taille : " + this.getWeightMatrix().getNumberOfRows());
+        System.out.println("Taille de la couche précédente : " + this.getWeightMatrix().getNumberOfColumns());
         System.out.println("Weights of the layer : ");
         this.getWeightMatrix().print();
+        System.out.println("Biais: ");
+        this.biasVector.print();
     }
 
     /**
@@ -49,7 +53,6 @@ public class Layer {
      * @return Le nouveau vecteur d'activation de cette couche.
      */
     public ActivationMatrix computeNewActivationMatrix(ActivationMatrix activationsOfPreviousLayer) {
-        System.out.println("aa");
         return activationsOfPreviousLayer
                 .multiplyAtRightByWeightMatrix(weightMatrix)  // Performe A' = W*A
                 .addBiasVector(this.biasVector) // A' = A + B

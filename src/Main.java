@@ -10,16 +10,27 @@ public class Main {
     public static void main(String[] args) {
 
 
-        MLP mlp = MLP.builder(4)
+        MLP mlp = MLP.builder(43)
                 .addLayer(2, ActivationFunction.ReLU)
                 .addLayer(4, ActivationFunction.Sigmoid)
-                .addLayer(2, ActivationFunction.Sigmoid)
+                .addLayer(123, ActivationFunction.Sigmoid)
+                .addLayer(4, ActivationFunction.Sigmoid)
+                .addLayer(43, ActivationFunction.Sigmoid)
+                .addLayer(43, ActivationFunction.Sigmoid)
+                .addLayer(4, ActivationFunction.Sigmoid)
+                .addLayer(43, ActivationFunction.Sigmoid)
+                .addLayer(4, ActivationFunction.Sigmoid)
+                .addLayer(43, ActivationFunction.Sigmoid)
+                .addLayer(4, ActivationFunction.Sigmoid)
+                .addLayer(4, ActivationFunction.Sigmoid)
+                .addLayer(1, ActivationFunction.Sigmoid)
                 .build();
 
+        ActivationMatrix am = new ActivationMatrix(creerTableau(43,3));
 
-        ActivationMatrix am = new ActivationMatrix(creerTableau(4,1));
+        ActivationMatrix result = mlp.feedForward(am);
 
-        mlp.feedForward(am);
+        result.print();
 
     }
 
