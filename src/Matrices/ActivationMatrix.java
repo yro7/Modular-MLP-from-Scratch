@@ -16,32 +16,35 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
         return new ActivationMatrix(rows, cols);
     }
 
+    public ActivationMatrix(double[][] data) {
+        super(data);
+    }
+
+
     /**
      * Ajoute un Vecteur de Biais à une matrice d'activation.
      * Cette fonction ajoute le vecteur biais à chaque colonne de la matrice d'activation.
+     * C'est une opération intermédiaire.
      * @param biasVector
      * @return
      */
     public ActivationMatrix addBiasVector(BiasVector biasVector){
         assert(this.getNumberOfRows() == biasVector.getNumberOfRows()) : "Vecteur d'entrée incorrect : "
-                + "Hauteur du vecteur bias :" + biasVector.getNumberOfRows()
-                + "Hauteur de la matrice : " + this.getNumberOfRows();
+                + "Hauteur du vecteur bias : " + biasVector.getNumberOfRows()
+                + " Hauteur de la matrice : " + this.getNumberOfRows();
 
         this.applyToElements((i,j) -> this.getData()[i][j] = this.getData()[i][j]+biasVector.getData()[i][0]);
         return this;
     }
 
     /**
-     * Retourne une nouvelle matrice d'activation qui correspond à la multiplication de la matrice actuelle par une matrice de poids.
-     * @param weightMatrix
+     * Si W est la matrice de poids et A est la matrice d'activation actuelle,
+     * renvoie WxA.
+     * @param weightMatrix la matrice par laquelle multiplier la matrice d'activation.
      * @return
      */
-    public ActivationMatrix multiplyByWeightMatrix(WeightMatrix weightMatrix){
-        return this.multiply(weightMatrix);
-    }
-
-    public double[] sumByColumns(){
-
+    public ActivationMatrix multiplyAtRightByWeightMatrix(WeightMatrix weightMatrix){
+        return this.multiplyAtRight(weightMatrix);
     }
 
 

@@ -30,8 +30,11 @@ public class MLP {
 
         // Pour chaque couche, on calcule un nouveau vecteur d'activations à partir du précédent
         // Et on l'envoie à la prochaine couche.
-        layers.forEach(layerMatrix -> layerMatrix.computeNewActivationMatrix(input));
-        return input;
+        ActivationMatrix newActivationMatrix = input.clone();
+        for(Layer layer : layers){
+            newActivationMatrix = layer.computeNewActivationMatrix(newActivationMatrix);
+        }
+        return newActivationMatrix;
     }
 
 
@@ -69,11 +72,12 @@ public class MLP {
     public void print(){
 
         int n = layers.size();
+        System.out.println();
         System.out.println("Dimension d'entrée : " + this.dimInput);
         System.out.println();
         for(int i = 0; i < n; i ++){
             System.out.println("Layer n°" + i + " : ");
-            layers.get(i).print();
+            this.layers.get(i).print();;
             System.out.println();
         }
     }

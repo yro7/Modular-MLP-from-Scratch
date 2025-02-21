@@ -13,11 +13,17 @@ import java.util.function.Function;
     // TODO etre restreint à des doubles.
 public abstract class Matrix<T extends Matrix<T>> {
 
-    private final double[][] data;
+    double[][] data;
 
     public Matrix(int rows, int cols) {
         data = new double[rows][cols];
     }
+
+    public Matrix(double[][] data) {
+        this.data = data;
+    }
+
+
 
     public Matrix(Matrix<?> source){
         this(source.getNumberOfRows(), source.getNumberOfColumns());
@@ -27,6 +33,7 @@ public abstract class Matrix<T extends Matrix<T>> {
 
     protected abstract T createInstance(int rows, int cols);
 
+    @SuppressWarnings("unchecked")
     protected T self() {
         return (T) this;
     }
@@ -131,24 +138,65 @@ public abstract class Matrix<T extends Matrix<T>> {
     }
 
     /**
-     * Renvoie une nouvelle matrice qui correspond au produit de la matrice actuelle
+     * Renvoie une NOUVELLE matrice qui correspond au produit de la matrice actuelle
      * ainsi que de la matrice passée en argument.
-     *
      * C'est une opération intermédiaire. (/!\ non commutative).
+     *
+     * Si A est la matrice this, B la matrice entrée,
+     * renvoie AxB. (du type de A).
+     *
      * Attention, les dimensions de la nouvelle matrice ne sont pas forcément égales
      * aux dimensions de l'ancienne.
      * @param matrix la matrice par laquelle on multiplie
      * @return une nouvelle matrice produit des 2.
      */
-    // TODO OPTIMISER A FOND LA MULTIPLICATION
+    // TODO optimiser à fond la multiplication
     public T multiply(Matrix<?> matrix){
-        int newNumberOfRows = this.getNumberOfColumns();
+        this.print();
+        matrix.print();
+        assert(this.getNumberOfColumns() == matrix.getNumberOfRows()) : "Matrices incompatibles pour un produit AxB :"
+                + " Nombre de colonnes de A : " + this.getNumberOfColumns()
+                + " Nombre de lignes de B : " + matrix.getNumberOfRows();
+        int newNumberOfRows = this.getNumberOfRows();
         int newNumberOfColumns = matrix.getNumberOfColumns();
         T newMatrix = createInstance(newNumberOfRows, newNumberOfColumns);
         newMatrix.applyToElements((i,j) -> {
-            for(int k = 0; i < newNumberOfRows; i ++){
-                newMatrix.getData()[i][j] = this.getData()[i][k]+matrix.getData()[k][j];
+            for(int k = 0; k < newNumberOfRows; k++){
+                newMatrix.getData()[i][j] += this.getData()[i][k]*matrix.getData()[k][j];
             }
+        });
+
+        return newMatrix;
+    }
+
+    /**
+     * Renvoie une NOUVELLE matrice qui correspond au produit de la matrice actuelle
+     * ainsi que de la matrice passée en argument.
+     * C'est une opération intermédiaire. (/!\ non commutative).
+     *
+     * Si A est la matrice this, B la matrice entrée,
+     * renvoie BxA. (du type de A).
+     *
+     * Attention, les dimensions de la nouvelle matrice ne sont pas forcément égales
+     * aux dimensions de l'ancienne.
+     * @param matrix la matrice par laquelle on multiplie
+     * @return une nouvelle matrice produit des 2.
+     */
+    public T multiplyAtRight(Matrix<?> matrix) {
+        assert(this.getNumberOfColumns() == matrix.getNumberOfRows()) : "Matrices incompatibles pour un produit AxB :"
+                + " Nombre de colonnes de A : " + this.getNumberOfColumns()
+                + " Nombre de lignes de B : " + matrix.getNumberOfRows();
+
+        int newNumberOfRows = this.getNumberOfRows();
+        int newNumberOfColumns = matrix.getNumberOfColumns();
+        T newMatrix = createInstance(newNumberOfRows, newNumberOfColumns);
+
+        newMatrix.applyToElements((i,j) -> {
+            double sum = 0.0;
+            for(int k = 0; k < this.getNumberOfColumns(); k++) {
+                sum += this.getData()[i][k] * matrix.getData()[k][j];
+            }
+            newMatrix.getData()[i][j] = sum;
         });
 
         return newMatrix;
@@ -248,6 +296,7 @@ public abstract class Matrix<T extends Matrix<T>> {
             if(j == 0) System.out.println();
             System.out.print(this.getData()[i][j] + ",  ");
         });
+        System.out.println();
     }
 
     /**
@@ -257,5 +306,14 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public int size(){
         return this.getNumberOfColumns()*this.getNumberOfRows();
+    }
+
+    public <T extends Matrix<?>> T createIdentity(int n){
+        T identity = (T) createInstance(n,n);
+        identity.applyToElements((i,j) -> {
+            identity.getData()[i][j] = (i == j ? 1.0 : 0.0);
+        });
+
+        return identity;
     }
 }
