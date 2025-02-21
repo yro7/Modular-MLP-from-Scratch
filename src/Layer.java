@@ -1,61 +1,55 @@
 import Function.ActivationFunction;
-import Matrices.ActivationVector;
-
-import java.util.ArrayList;
-import java.util.List;
+import Matrices.ActivationMatrix;
+import Matrices.BiasVector;
+import Matrices.WeightMatrix;
 
 public class Layer {
 
-    private List<Neuron> neurons;
+    private WeightMatrix weightMatrix;
+
+    /**
+     * Le biais de chaque neurone. Si la couche possède n neurones, la {@link Matrices.Matrix} {@link BiasVector} sera de dimension n*1.
+     */
+    private BiasVector biasVector;
+    /** La <a href="https://en.wikipedia.org/wiki/Activation_function">Fonction d'Activationf</a> à utiliser dans cette couche du réseau de neurones.
+     * Cette architecture ne permet donc pas d'avoir une {@link ActivationFunction} différente par neurone de la couche
+     * (la couche est neuron-agnostique, elle ne possède pas d'objet "neurone" à proprement parler), mais à part dans certaines architectures
+     * précises (voir <a href="https://www.ibm.com/think/topics/mixture-of-experts">Mixture of Experts</a>) cela n'est généralement pas une bonne chose à avoir.
+     */
     private ActivationFunction activationFunction;
-    // TODO "WeightMatrix" plutot que list neurons
-    // TODO ActivationFunction et on enlève la psosibilité d'en avoir 1 différente par neurone du réseau.
 
-    public List<Neuron> getNeurons() {
-        return neurons;
+    public WeightMatrix getWeightMatrix() {
+        return weightMatrix;
     }
 
-    public void setNeurons(List<Neuron> neurons) {
-        this.neurons = neurons;
-    }
-
-    public Layer(int numberOfNeurons, ActivationFunction activationFunction){
-        List<Neuron> neurons = new ArrayList<>();
-        for(int i = 0; i < numberOfNeurons; i ++){
-            neurons.add(new Neuron(activationFunction));
-        }
-        this.neurons = neurons;
+    /**
+     *
+     * @param numberOfNeurons Le nombre de neurones de la nouvelle couche.
+     * @param numberOfNeuronsOfPreviousLayer le nombre de neurones de la couche précédente.
+     * @param activationFunction
+     */
+    public Layer(int numberOfNeurons, int numberOfNeuronsOfPreviousLayer, ActivationFunction activationFunction){
+        this.weightMatrix = new WeightMatrix(numberOfNeurons, numberOfNeuronsOfPreviousLayer, activationFunction);
     }
 
     public void print() {
-        int n = this.getNeurons().size();
-        System.out.println("Size " + n);
-        for(int i = 0; i < n; i++){
-            Neuron neuronI = this.getNeuron(i);
-            System.out.println("Neuron " + i + " W/B : " + neuronI.getWeights() + " / " + neuronI.getBias());
-        }
-    }
-
-    private Neuron getNeuron(int i) {
-        return this.getNeurons().get(i);
-    }
-
-
-    public void initialize(int previousLayerSize, int layerSize){
-        this.getNeurons().forEach(n -> n.initialize(previousLayerSize, layerSize));
+        System.out.println("Layer n° " + this);
+        System.out.println("Weights of the layer : ");
+        this.getWeightMatrix().print();
     }
 
     /**
      * Pour chaque neurone dans la couche, calcule l'activation en fonction des activations de la couche précédente.
+     * On calcule le produit matriciel de la matrice d'activation et de la matrice de poids de la couche actuelle,
+     * Puis on y ajoute le biais et on y applique la fonction d'activation.
      * @param activationsOfPreviousLayer Le vecteur d'activation de la couche précédente
      * @return Le nouveau vecteur d'activation de cette couche.
      */
-    public ActivationVector computeActivationVectorOfPreviousLayer(ActivationVector activationsOfPreviousLayer) {
-        ActivationVector newActivationVector = new ActivationVector();
-        for(Neuron neuron : this.getNeurons()){
-            double activation = neuron.feedPreviousLayer(activationsOfPreviousLayer);
-            newActivationVector.add(activation);
-        }
-        return newActivationVector;
+    public ActivationMatrix computeNewActivationMatrix(ActivationMatrix activationsOfPreviousLayer) {
+        return activationsOfPreviousLayer
+                .multiplyByWeightMatrix(weightMatrix)
+                .applyFunction(d -> this.activationFunction.apply(d))
+                .addBiasVector(this.biasVector);
     }
+
 }

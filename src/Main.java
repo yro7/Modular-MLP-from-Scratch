@@ -1,9 +1,12 @@
 import Function.ActivationFunction;
-import Matrices.Matrix;
+import Matrices.ActivationMatrix;
+import Matrices.WeightMatrix;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
+
+        ActivationVector activationVector = ActivationVector.of(1.0, 2.0);
 
         MLP mlp = MLP.builder(4)
                 .addLayer(2, ActivationFunction.ReLU)
@@ -11,9 +14,13 @@ public class Main {
                 .addLayer(2, ActivationFunction.Sigmoid)
                 .build();
 
+        WeightMatrix matrix = new WeightMatrix(5,5, ActivationFunction.Sigmoid);
+        ActivationMatrix am = new ActivationMatrix(5,5);
 
-        Matrix matrix = new Matrix(5,5);
-        matrix.print();
+        am.multiplyByWeightMatrix(matrix);
+
+        am.print();
+
 
     }
 
