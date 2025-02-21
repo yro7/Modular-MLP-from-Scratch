@@ -1,3 +1,5 @@
+package Function;
+
 import java.util.function.Function;
 
 public enum ActivationFunction {

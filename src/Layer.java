@@ -1,11 +1,15 @@
+import Function.ActivationFunction;
+import Matrices.ActivationVector;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 public class Layer {
 
     private List<Neuron> neurons;
-
+    private ActivationFunction activationFunction;
+    // TODO "WeightMatrix" plutot que list neurons
+    // TODO ActivationFunction et on enlève la psosibilité d'en avoir 1 différente par neurone du réseau.
 
     public List<Neuron> getNeurons() {
         return neurons;
