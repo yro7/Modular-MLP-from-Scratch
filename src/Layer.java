@@ -26,30 +26,37 @@ public class Layer {
      *
      * @param numberOfNeurons Le nombre de neurones de la nouvelle couche.
      * @param numberOfNeuronsOfPreviousLayer le nombre de neurones de la couche précédente.
-     * @param activationFunction
+     * @param activationFunction la fonction d'activation à appliquer à la fin du calcul
      */
     public Layer(int numberOfNeurons, int numberOfNeuronsOfPreviousLayer, ActivationFunction activationFunction){
         this.weightMatrix = new WeightMatrix(numberOfNeurons, numberOfNeuronsOfPreviousLayer, activationFunction);
+        this.activationFunction = activationFunction;
+        this.biasVector = new BiasVector(numberOfNeurons, numberOfNeuronsOfPreviousLayer, activationFunction);
     }
 
     public void print() {
-        System.out.println("Layer n° " + this);
+        System.out.println("Activation function : " + this.getActivationFunction());
         System.out.println("Weights of the layer : ");
         this.getWeightMatrix().print();
     }
 
     /**
-     * Pour chaque neurone dans la couche, calcule l'activation en fonction des activations de la couche précédente.
-     * On calcule le produit matriciel de la matrice d'activation et de la matrice de poids de la couche actuelle,
-     * Puis on y ajoute le biais et on y applique la fonction d'activation.
+     * Renvoie f(WxA + B) où W est la matrice de poids, A la matrice d'activation actuelle,
+     * B le vecteur biais, f la fonction d'activation de la couche.
+     *
+     * Calcule donc les activations des neuronnes de cette couche.
      * @param activationsOfPreviousLayer Le vecteur d'activation de la couche précédente
      * @return Le nouveau vecteur d'activation de cette couche.
      */
     public ActivationMatrix computeNewActivationMatrix(ActivationMatrix activationsOfPreviousLayer) {
+        System.out.println("aa");
         return activationsOfPreviousLayer
-                .multiplyByWeightMatrix(weightMatrix)
-                .applyFunction(d -> this.activationFunction.apply(d))
-                .addBiasVector(this.biasVector);
+                .multiplyAtRightByWeightMatrix(weightMatrix)  // Performe A' = W*A
+                .addBiasVector(this.biasVector) // A' = A + B
+                .applyFunction(d -> this.activationFunction.apply(d)); // A = f(A)
     }
 
+    public ActivationFunction getActivationFunction(){
+        return this.activationFunction;
+    }
 }

@@ -1,12 +1,14 @@
 import Function.ActivationFunction;
 import Matrices.ActivationMatrix;
+import Matrices.BiasVector;
+import Matrices.Matrix;
 import Matrices.WeightMatrix;
+
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
 
-        ActivationVector activationVector = ActivationVector.of(1.0, 2.0);
 
         MLP mlp = MLP.builder(4)
                 .addLayer(2, ActivationFunction.ReLU)
@@ -14,14 +16,22 @@ public class Main {
                 .addLayer(2, ActivationFunction.Sigmoid)
                 .build();
 
-        WeightMatrix matrix = new WeightMatrix(5,5, ActivationFunction.Sigmoid);
-        ActivationMatrix am = new ActivationMatrix(5,5);
 
-        am.multiplyByWeightMatrix(matrix);
+        ActivationMatrix am = new ActivationMatrix(creerTableau(4,1));
 
-        am.print();
+        mlp.feedForward(am);
 
+    }
 
+    public static double[][] creerTableau(int n, int p){
+        double[][] res = new double[n][p];
+        int compteur = 1;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < p; j++) {
+                res[i][j] = compteur++;
+            }
+        }
+        return res;
     }
 
 

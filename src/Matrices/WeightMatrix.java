@@ -20,6 +20,10 @@ public class WeightMatrix extends Matrix<WeightMatrix> {
         return new WeightMatrix(rows, cols);
     }
 
+    public WeightMatrix(double[][] data) {
+        super(data);
+    }
+
     /**
      * Permet d'initialiser une nouvelle matrice selon la fonction d'activation de la nouvelle couche du réseau de neurones.
      *

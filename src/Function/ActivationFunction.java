@@ -25,6 +25,10 @@ public enum ActivationFunction {
         return initializationFunction;
     }
 
+    public double applyRandomBias(int n, int p){
+        return this.getInitializationFunction().getRandomBias.apply(n,p);
+    }
+
 
 }
 
