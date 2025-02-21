@@ -1,6 +1,6 @@
 package Function;
 
-import Matrices.ActivationVector;
+import Matrices.ActivationMatrix;
 
 import java.util.function.BiFunction;
 
@@ -31,13 +31,13 @@ public enum LossFunction {
     );
 
 
-    public final BiFunction<ActivationVector,ActivationVector, Double> lossFunction;
+    public final BiFunction<ActivationMatrix,ActivationMatrix, Double> lossFunction;
 
-    LossFunction(BiFunction <ActivationVector,ActivationVector,Double> lossFunction){
+    LossFunction(BiFunction <ActivationMatrix,ActivationMatrix,Double> lossFunction){
         this.lossFunction = lossFunction;
     }
 
-    public double apply(ActivationVector networkOutput, ActivationVector input) {
+    public double apply(ActivationMatrix networkOutput, ActivationMatrix input) {
         return this.lossFunction.apply(networkOutput, input);
     }
 }

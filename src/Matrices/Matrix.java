@@ -1,6 +1,5 @@
 package Matrices;
 
-import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -8,8 +7,11 @@ import java.util.function.Function;
 /**
  * Classe utilitaire pour implémenter tous les algorithmes de gestion de matrices.
  */
-
-public class Matrix {
+        // CRTP pour method chaining avec préservation de type
+        // c'est pas très joli mais c'est utile
+    // TODO faire un type de matrix générique qui peut prendre <? extends Number> pour ne pas
+    // TODO etre restreint à des doubles.
+public abstract class Matrix<T extends Matrix<T>> {
 
     private final double[][] data;
 
@@ -17,12 +19,16 @@ public class Matrix {
         data = new double[rows][cols];
     }
 
-    /**
-     * Construit une nouvelle matrice de même dimension que la matrice d'entrée.
-     * @param matrix la matrice d'entrée
-     */
-    public Matrix(Matrix matrix) {
-        data = new double[matrix.getNumberOfRows()][matrix.getNumberOfColumns()];
+    public Matrix(Matrix<?> source){
+        this(source.getNumberOfRows(), source.getNumberOfColumns());
+        applyToElements((i,j) -> this.data[i][j] = source.data[i][j]);
+    }
+
+
+    protected abstract T createInstance(int rows, int cols);
+
+    protected T self() {
+        return (T) this;
     }
 
     public double[][] getData() {
@@ -30,11 +36,11 @@ public class Matrix {
     }
 
     public int getNumberOfColumns(){
-        return this.getData().length;
+        return this.getData()[0].length;
     }
 
     public int getNumberOfRows(){
-        return this.getData()[0].length;
+        return this.getData().length;
     }
 
     // Interface qui permet d'itérer sur les éléments de la matrice
@@ -49,6 +55,7 @@ public class Matrix {
      * C'est une opération intermédiaire.
      */
     public void applyToElements(ElementOperation operation){
+
         for(int i = 0; i < this.getNumberOfRows(); i++){
             for(int j = 0; j < this.getNumberOfColumns(); j++){
                 operation.apply(i,j);
@@ -62,9 +69,9 @@ public class Matrix {
      * C'est une opération intermédiaire.
      * @param action l'action a effectuer.
      */
-    public Matrix forEach(Consumer<? super Double> action){
+    public T forEach(Consumer<? super Double> action){
         applyToElements((i,j) -> action.accept(this.data[i][j]));
-        return this;
+        return self();
     }
 
     /**
@@ -72,11 +79,29 @@ public class Matrix {
      * C'est une opération intermédiaire.
      * @return
      */
-    @Override
-    public Matrix clone(){
-        Matrix res = new Matrix(this);
-        applyToElements((i,j) -> res.data[i][j] = this.data[i][j]);
+    public T clone(){
+        T res = this.createInstance(this.getNumberOfRows(), this.getNumberOfColumns());
+        applyToElements((i,j) -> res.getData()[i][j] = this.getData()[i][j]);
         return res;
+    }
+
+    /**
+     * Cette fonction et {@link #cloneWeight()}} permettent de renvoyer une nouvelle {@link ActivationMatrix} qui a les mêmes valeurs que la matrice actuelle.
+     * Avoir 2 sous-classes spécifiant "Activation" et "Weight" permet de séparer les matrices en fonction de leur usage,
+     * ainsi que de séparer le code en plusieurs parties pour plus de lisibilité.
+     * @return une {@link ActivationMatrix} aux mêmes valeurs que la matrice actuelle.
+     */
+    public ActivationMatrix cloneActivation(){
+        return (ActivationMatrix) this.clone();
+    }
+    /**
+     * Cette fonction et {@link #cloneActivation()} ()}} permettent de renvoyer une nouvelle {@link WeightMatrix} qui a les mêmes valeurs que la matrice actuelle.
+     * Avoir 2 sous-classes spécifiant "Activation" et "Weight" permet de séparer les matrices en fonction de leur usage,
+     * ainsi que de séparer le code en plusieurs parties pour plus de lisibilité.
+     * @return une {@link WeightMatrix} aux mêmes valeurs que la matrice actuelle.
+     */
+    public WeightMatrix cloneWeight(){
+        return (WeightMatrix) this.clone();
     }
 
     /**
@@ -87,37 +112,59 @@ public class Matrix {
      * @param matrix la deuxième matrice à utiliser
      * @return la même matrice modifiée
      */
-    public Matrix elementWiseOperation(BiFunction<Double,Double,Double> function, Matrix matrix){
+    public T elementWiseOperation(BiFunction<Double,Double,Double> function, Matrix<?> matrix){
         verifyDimensions(matrix);
-        applyToElements((i,j) -> function.apply(this.data[i][j],matrix.data[i][j]));
-        return this;
+        applyToElements((i,j) -> function.apply(this.data[i][j], matrix.getData()[i][j]));
+        return self();
     }
 
     /**
-     * Renvoie une nouvelle matrice dont chaque élément est le résultat
-     * de la fonction appliquée à l'élément de la matrice initiale.
+     * Applique la fonction donnée à chaque élément de la matrice,
+     * puis la renvoie.
      * C'est une opération intermédiaire.
      * @param function la fonction à appliquer
-     * @return le nouveau vecteur d'activation.
+     * @return la même matrice modifiée par la fonction
      */
-    public Matrix applyFunction(Function<Double,Double> function){
-        Matrix res = new Matrix(this);
-        res.forEach(function::apply);
-        return res;
+    public T applyFunction(Function<Double,Double> function){
+        this.forEach(function::apply);
+        return self();
     }
 
     /**
      * Renvoie une nouvelle matrice qui correspond au produit de la matrice actuelle
      * ainsi que de la matrice passée en argument.
      *
-     * C'est une opération intermédiaire. (/!\ non commutatif).
+     * C'est une opération intermédiaire. (/!\ non commutative).
      * Attention, les dimensions de la nouvelle matrice ne sont pas forcément égales
      * aux dimensions de l'ancienne.
      * @param matrix la matrice par laquelle on multiplie
      * @return une nouvelle matrice produit des 2.
      */
-    public Matrix multiply(Matrix matrix){
-        return new Matrix(0,0);
+    // TODO OPTIMISER A FOND LA MULTIPLICATION
+    public T multiply(Matrix<?> matrix){
+        int newNumberOfRows = this.getNumberOfColumns();
+        int newNumberOfColumns = matrix.getNumberOfColumns();
+        T newMatrix = createInstance(newNumberOfRows, newNumberOfColumns);
+        newMatrix.applyToElements((i,j) -> {
+            for(int k = 0; i < newNumberOfRows; i ++){
+                newMatrix.getData()[i][j] = this.getData()[i][k]+matrix.getData()[k][j];
+            }
+        });
+
+        return newMatrix;
+    }
+
+    /**
+     * Renvoie la somme, élément par élément, des éléments de la matrice.
+     * C'est une opération terminale.
+     * @return un double qui correspond à l'ensemble des
+     */
+    public double sum(){
+        // Nécessaire de passer par un tableau pour pouvoir
+        // Utiliser la variable dans le lambda #forEach
+        double[] res = {0.0};
+        this.forEach(d -> res[0] += d);
+        return res[0];
     }
 
 
@@ -126,26 +173,45 @@ public class Matrix {
      * Soustrait une autre {@link Matrix} terme à terme à la matrice actuelle.
      * C'est une opération intermédiaire.
      * @param matrix la matrice de même dimension que this, qu'on soustrait
-     * @return une nouvelle {@link Matrix} qui correspond à la différence terme à terme.
+     * @return la même {@link Matrix} qui correspond à la différence terme à terme.
      */
-    public Matrix substract(Matrix matrix){
+    public T substract(Matrix<?> matrix){
         verifyDimensions(matrix);
         return elementWiseOperation((d1,d2) -> d1 - d2, matrix);
     }
 
     /**
+     * Multiplie une autre {@link Matrix} terme à terme à la matrice actuelle.
+     * C'est une opération intermédiaire.
+     * @param matrix la matrice de même dimension que this, qu'on multiplie
+     * @return la même {@link Matrix} qui correspond à la différence terme à terme.
+     */
+    public T hadamardProduct(Matrix<?> matrix){
+        verifyDimensions(matrix);
+        return elementWiseOperation((d1, d2) -> d1 * d2, matrix);
+    }
+
+    /**
      * Vérifie que la matrice passée en argument possède les mêmes
-     * dimensions que la matrice actuelle.
+     * dimensions que la matrice actuelle et lève une {@link AssertionError} dans le cas contraire.
+     * C'est une opération terminale.
      * @param matrix
      */
-    private void verifyDimensions(Matrix matrix) {
+    private void verifyDimensions(Matrix<?> matrix) {
         assert(this.hasSameDimensions(matrix)) : "Les matrices ne sont pas de même dimensions !"
                 + " Matrice A : " + this.getNumberOfRows()+ " * " + this.getNumberOfColumns()
                 + " Matrice B : " + matrix.getNumberOfRows()+ " * " + matrix.getNumberOfColumns();
 
     }
 
-    private boolean hasSameDimensions(Matrix matrix) {
+    /**
+     * Vérifie que 2 matrices ont des dimensions compatibles pour les opérations.
+     * C'est une opération terminale.
+     * {@link #elementWiseOperation}.
+     * @param matrix la matrice à tester
+     * @return True si elles ont les mêmes dimensions, False sinon
+     */
+    private boolean hasSameDimensions(Matrix<?> matrix) {
         return this.getNumberOfColumns() == matrix.getNumberOfColumns()
                 && this.getNumberOfRows() == matrix.getNumberOfRows();
     }
@@ -155,7 +221,7 @@ public class Matrix {
      * C'est une opération intermédiaire.
      * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
      */
-    public Matrix log(){
+    public T log(){
         return this.applyFunction(Math::log);
     }
 
@@ -164,24 +230,32 @@ public class Matrix {
      * C'est une opération intermédiaire.
      * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
      */
-    public Matrix cosh(){
+    public T cosh(){
         return this.applyFunction(Math::cosh);
     }
 
     /** Renvoie un nouveau vecteur dont chaque composante est
-     * le carré de l'ancien;
+     * le carré de l'ancien.
      * C'est une opération intermédiaire.
      * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
      */
-    public Matrix square(){
+    public T square(){
         return this.applyFunction(d -> Math.pow(d,2));
     }
 
     public void print(){
         this.applyToElements((i,j) -> {
             if(j == 0) System.out.println();
-            System.out.print(this.getData()[i][j] + ", ");
+            System.out.print(this.getData()[i][j] + ",  ");
         });
     }
 
+    /**
+     * Renvoie le nombre d'éléments dans la matrice (n x p si la matrice est une matrice de taille (n,p)).
+     * C'est une opération terminale.
+     * @return l'entier qui correspond au nombre d'éléments de la matrice.
+     */
+    public int size(){
+        return this.getNumberOfColumns()*this.getNumberOfRows();
+    }
 }

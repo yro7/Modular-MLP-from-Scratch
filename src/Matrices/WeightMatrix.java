@@ -9,10 +9,15 @@ import Function.ActivationFunction;
  * La colonne i d'une matrice de poids représente les poids de chaque neuronne de la couche actuelle avec
  * le neuronne i de la couche précédente.
  */
-public class WeightMatrix extends Matrix {
+public class WeightMatrix extends Matrix<WeightMatrix> {
 
     public WeightMatrix(int rows, int cols) {
         super(rows, cols);
+    }
+
+    @Override
+    protected WeightMatrix createInstance(int rows, int cols) {
+        return new WeightMatrix(rows, cols);
     }
 
     /**

@@ -3,6 +3,7 @@ package Function;
 import java.util.function.Function;
 
 public enum ActivationFunction {
+
     ReLU(InitializationFunction.He, a -> Math.max(0, a)),
     TanH(InitializationFunction.Xavier, Math::tanh),
     Sigmoid(InitializationFunction.LeCun, a -> 1 / (1 + Math.exp(-a))),
@@ -23,5 +24,7 @@ public enum ActivationFunction {
     public InitializationFunction getInitializationFunction() {
         return initializationFunction;
     }
+
+
 }
 
