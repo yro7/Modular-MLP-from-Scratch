@@ -1,7 +1,13 @@
+package Function;
+
+import Matrices.ActivationVector;
+
 import java.util.function.BiFunction;
 
 public enum LossFunction {
 
+    // TODO rajouter public static Random
+    // TODO rajouter option pour choisir la seed pour la reproductibilité
     /**
      * Mean Squared Error loss function (Erreur moyenne au carré).
      */

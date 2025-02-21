@@ -1,5 +1,7 @@
+import Function.LossFunction;
+import Matrices.ActivationVector;
+
 import java.util.List;
-import java.util.Vector;
 
 public class MLP {
 
@@ -10,6 +12,9 @@ public class MLP {
         this.layers = layers;
         this.dimInput = dimInput;
     }
+
+    // TODO TODO implémenter plutôt le calcul en multiplications
+    // TODO TODO matricielles plutôt qu'en séquentiel
 
     /**
      * Envoie au réseau de neurones un vecteur d'activations initial (la donnée d'entrée mise sous forme de vecteur
@@ -26,6 +31,7 @@ public class MLP {
         // Pour chaque couche, on calcule un nouveau vecteur d'activations à partir du précédent
         // Et on l'envoie à la prochaine couche.
         int i = 0;
+
         for(Layer layer : layers) {
 
             System.out.println("Activation de la couche n°" + i + " : " + activationsOfPreviousLayer);
@@ -56,9 +62,15 @@ public class MLP {
         return computeLoss(input, expectedOutput, LossFunction.MSE);
     }
 
+    public void backPropagate(ActivationVector input, ActivationVector vector) {
+
+    }
+
     public static MLPBuilder builder(int dimInput){
         return new MLPBuilder(dimInput);
     }
+
+
 
 
     public void print(){

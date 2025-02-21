@@ -1,4 +1,5 @@
-import java.util.List;
+package Matrices;
+
 import java.util.Vector;
 import java.util.function.Function;
 
@@ -6,6 +7,8 @@ import java.util.function.Function;
  * Représente un vecteur d'activations des neurones de la couche précédente, qui sera envoyé aux neurones de la couche suivante.
  * Implémente (essaie plus ou moins) un design d'<a href="https://en.wikipedia.org/wiki/Fluent_interface#Immutability">Immutable fluent interface</a>.
  */
+
+// TODO remplacer l'héritage Vector<Double> par List<Double, car Vector pas opti
 public class ActivationVector extends Vector<Double> {
 
     public static ActivationVector of(Double ... doubles){
@@ -13,7 +16,6 @@ public class ActivationVector extends Vector<Double> {
         for(Double d : doubles) res.add(d);
         return res;
     }
-
     /**
      * Soustrait un autre {@link ActivationVector} terme à terme au vecteur.
      * C'est une opération intermédiaire.
