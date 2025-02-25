@@ -23,7 +23,7 @@ public class Main {
                 .addLayer(43, ActivationFunction.Sigmoid)
                 .addLayer(4, ActivationFunction.Sigmoid)
                 .addLayer(4, ActivationFunction.Sigmoid)
-                .addLayer(1, ActivationFunction.Sigmoid)
+                .addLayer(2, ActivationFunction.Sigmoid)
                 .build();
 
         ActivationMatrix am = new ActivationMatrix(creerTableau(43,3));

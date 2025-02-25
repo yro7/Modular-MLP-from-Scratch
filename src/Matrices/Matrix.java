@@ -201,6 +201,16 @@ public abstract class Matrix<T extends Matrix<T>> {
     }
 
     /**
+     * Renvoie une une NOUVELLE matrice qui correspond à la transposée de la matrice actuelle.
+     * @return
+     */
+    public T transpose(){
+        T newMatrix = this.createInstance(getNumberOfColumns(), getNumberOfRows());
+        this.applyToElements((i,j) -> newMatrix.data[i][j] = this.data[i][j]);
+        return newMatrix;
+    }
+
+    /**
      * Renvoie la somme, élément par élément, des éléments de la matrice.
      * C'est une opération terminale.
      * @return un double qui correspond à l'ensemble des
@@ -287,6 +297,10 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public T square(){
         return this.applyFunction(d -> Math.pow(d,2));
+    }
+
+    public T multiply(double scalar){
+        return this.applyFunction(d -> d*scalar);
     }
 
     public void print(){

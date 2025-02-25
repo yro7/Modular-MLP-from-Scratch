@@ -6,20 +6,23 @@ import java.util.function.BiFunction;
 
 public enum LossFunction {
 
-    // TODO rajouter public static Random
-    // TODO rajouter option pour choisir la seed pour la reproductibilité
+
+    // TODO   mettre les bonnes dérivées
     /**
      * Mean Squared Error loss function (Erreur moyenne au carré).
      */
     MSE(
-            (y_output,y_true) -> (y_output.substract(y_true).square().sum()) / y_output.size()
+            (y_output,y_true) -> (y_output.substract(y_true).square().sum()) / y_output.size(),
+            (y,y2) -> y.substract(y2).multiply(2).sum()
     ),
 
     /**
      * Mean Absolute Error loss function (Erreur moyenne absolue).
      */
     MAE(
-            (y_output,y_true) -> Math.abs(y_output.substract(y_true).sum())
+            (y_output,y_true) -> Math.abs(y_output.substract(y_true).sum()),
+            (y,y2) -> y.substract(y2).multiply(2).sum()
+
     ),
 
     /**
@@ -27,14 +30,18 @@ public enum LossFunction {
      */
 
     LogCosh(
-            (y_output,y_true) -> y_output.substract(y_true).cosh().log().sum()
+            (y_output,y_true) -> y_output.substract(y_true).cosh().log().sum(),
+            (y,y2) -> y.substract(y2).multiply(2).sum()
     );
 
 
     public final BiFunction<ActivationMatrix,ActivationMatrix, Double> lossFunction;
+    public final BiFunction<ActivationMatrix,ActivationMatrix, Double> derivative;
 
-    LossFunction(BiFunction <ActivationMatrix,ActivationMatrix,Double> lossFunction){
+    LossFunction(BiFunction <ActivationMatrix,ActivationMatrix,Double> lossFunction,
+            BiFunction <ActivationMatrix,ActivationMatrix,Double> derivative){
         this.lossFunction = lossFunction;
+        this.derivative = derivative;
     }
 
     public double apply(ActivationMatrix networkOutput, ActivationMatrix input) {
