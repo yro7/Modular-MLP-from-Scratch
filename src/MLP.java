@@ -1,5 +1,6 @@
 import Function.LossFunction;
 import Matrices.ActivationMatrix;
+import Matrices.GradientVector;
 
 import java.util.List;
 
@@ -12,10 +13,6 @@ public class MLP {
         this.layers = layers;
         this.dimInput = dimInput;
     }
-
-    // TODO TODO implémenter plutôt le calcul en multiplications
-    // TODO TODO matricielles plutôt qu'en séquentiel
-
     /**
      * Envoie au réseau de neurones un vecteur d'activations initial (la donnée d'entrée mise sous forme de vecteur
      * aux dimensions de la première couche du réseau) et renvoie le vecteur d'activations de la dernière couche du réseau
@@ -58,7 +55,18 @@ public class MLP {
         return computeLoss(input, expectedOutput, LossFunction.MSE);
     }
 
-    public void backPropagate(ActivationMatrix input, ActivationMatrix vector) {
+    public void backPropagate(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction) {
+
+        ActivationMatrix output = this.feedForward(input);
+
+        // gradient de la taille de la dernière couche
+        GradientVector firstGradient = new GradientVector(layers.getLast().size());
+
+        for(Layer layer : layers.reversed()){
+            GradientVector newGradient = new GradientVector(layer.size());
+         //   lossFunction.derivative.apply(1
+
+        }
 
     }
 

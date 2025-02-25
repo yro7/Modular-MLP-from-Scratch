@@ -62,4 +62,9 @@ public class Layer {
     public ActivationFunction getActivationFunction(){
         return this.activationFunction;
     }
+
+    public int size(){
+        return this.getWeightMatrix().getNumberOfRows();
+    }
+
 }
