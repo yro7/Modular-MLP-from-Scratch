@@ -70,7 +70,7 @@ public class MLP {
 
     }
 
-    public static MLPBuilder builder(int dimInput){
+    public static MLPBuilder builder( int dimInput){
         return new MLPBuilder(dimInput);
     }
 

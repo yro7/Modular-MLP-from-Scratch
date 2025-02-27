@@ -1,8 +1,10 @@
 package Function;
 
+import java.util.Random;
 import java.util.function.Function;
 
 public enum ActivationFunction {
+
 
     ReLU(InitializationFunction.He, a -> Math.max(0, a)),
     TanH(InitializationFunction.Xavier, Math::tanh),
@@ -11,6 +13,7 @@ public enum ActivationFunction {
 
     public final InitializationFunction initializationFunction;
     public final Function<Double, Double> function;
+    public static Random randomGenerator = new Random();
 
     ActivationFunction(InitializationFunction initializationFunction, Function<Double, Double> function) {
         this.initializationFunction = initializationFunction;
