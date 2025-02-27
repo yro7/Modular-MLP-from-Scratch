@@ -206,7 +206,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public T transpose(){
         T newMatrix = this.createInstance(getNumberOfColumns(), getNumberOfRows());
-        this.applyToElements((i,j) -> newMatrix.data[i][j] = this.data[i][j]);
+        this.applyToElements((i,j) -> newMatrix.data[i][j] = this.data[j][i]);
         return newMatrix;
     }
 

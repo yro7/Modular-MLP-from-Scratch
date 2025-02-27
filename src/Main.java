@@ -1,36 +1,20 @@
 import Function.ActivationFunction;
-import Matrices.ActivationMatrix;
-import Matrices.BiasVector;
-import Matrices.Matrix;
-import Matrices.WeightMatrix;
+import Matrices.*;
 
-import java.util.Arrays;
+import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
 
 
         MLP mlp = MLP.builder(43)
+                .setRandomSeed(2)
                 .addLayer(2, ActivationFunction.ReLU)
-                .addLayer(4, ActivationFunction.Sigmoid)
-                .addLayer(123, ActivationFunction.Sigmoid)
-                .addLayer(4, ActivationFunction.Sigmoid)
-                .addLayer(43, ActivationFunction.Sigmoid)
-                .addLayer(43, ActivationFunction.Sigmoid)
-                .addLayer(4, ActivationFunction.Sigmoid)
-                .addLayer(43, ActivationFunction.Sigmoid)
-                .addLayer(4, ActivationFunction.Sigmoid)
-                .addLayer(43, ActivationFunction.Sigmoid)
-                .addLayer(4, ActivationFunction.Sigmoid)
                 .addLayer(4, ActivationFunction.Sigmoid)
                 .addLayer(2, ActivationFunction.Sigmoid)
                 .build();
 
-        ActivationMatrix am = new ActivationMatrix(creerTableau(43,3));
-
-        ActivationMatrix result = mlp.feedForward(am);
-
-        result.print();
+        mlp.print();
 
     }
 
