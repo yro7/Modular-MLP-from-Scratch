@@ -1,7 +1,10 @@
+import Function.ActivationFunction;
 import Function.LossFunction;
 import Matrices.ActivationMatrix;
-import Matrices.GradientVector;
+import Matrices.GradientMatrix;
+import Matrices.WeightMatrix;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MLP {
@@ -14,24 +17,33 @@ public class MLP {
         this.dimInput = dimInput;
     }
     /**
-     * Envoie au réseau de neurones un vecteur d'activations initial (la donnée d'entrée mise sous forme de vecteur
-     * aux dimensions de la première couche du réseau) et renvoie le vecteur d'activations de la dernière couche du réseau
-     * (la réponse du réseau de neurones).
+     * Envoie au réseau de neurones une batch ({@link ActivationMatrix}
+     * et renvoie les matrices d'activations des couches du réseau après le calcul.
+     * La fonction renvoie une paire ou le premier élément de la paire est la matrice des activations
+     * après application de la fonction d'activation, le second avant. (utile pour {@link #gradientDescent}.
      * @param input Le vecteur d'activation initial
-     * @return
+     * @return Une liste de paires matrices d'activation qui correspond aux activations de chaque couche
+     * dans l'ordre.
      */
 
-    public ActivationMatrix feedForward(ActivationMatrix input){
-        // TODO Custom Annotation pour forcer l'usage de la bonne taille à la compilation (et pas juste au runtime)
+    public List<Pair<ActivationMatrix,ActivationMatrix>> feedForward(ActivationMatrix input){
         assert(input.getNumberOfRows() == dimInput) : "Erreur : dim d'entrée attendue = " + dimInput + " , obtenue : " + input.getNumberOfRows() + ".";
 
-        // Pour chaque couche, on calcule un nouveau vecteur d'activations à partir du précédent
-        // Et on l'envoie à la prochaine couche.
+        List<Pair<ActivationMatrix,ActivationMatrix>> res = new ArrayList<>();
+        ActivationMatrix preFunctionActivationMatrix = input.clone();
         ActivationMatrix newActivationMatrix = input.clone();
+
         for(Layer layer : layers){
-            newActivationMatrix = layer.computeNewActivationMatrix(newActivationMatrix);
+
+            // Calcul de W*A + B
+            preFunctionActivationMatrix = layer.computePreFunctionNewActivationMatrix(newActivationMatrix);
+            // Calcul de f(WxA + B)
+            newActivationMatrix = preFunctionActivationMatrix.applyFunction(layer.getActivationFunction());
+            res.add(new Pair<>(newActivationMatrix, preFunctionActivationMatrix));
+
         }
-        return newActivationMatrix;
+
+        return res;
     }
 
 
@@ -41,7 +53,7 @@ public class MLP {
      * @return le coût associé
      */
     public double computeLoss(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction){
-        ActivationMatrix networkOutput = feedForward(input);
+        ActivationMatrix networkOutput = feedForward(input).getLast().getA();
         System.out.println("Network output : " + networkOutput);
         return lossFunction.apply(networkOutput, expectedOutput);
     }
@@ -55,19 +67,40 @@ public class MLP {
         return computeLoss(input, expectedOutput, LossFunction.MSE);
     }
 
-    public void backPropagate(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction) {
+    public List<GradientMatrix> gradientDescent(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction) {
+        List<GradientMatrix> res = new ArrayList<>();
 
-        ActivationMatrix output = this.feedForward(input);
+        List<Pair<ActivationMatrix,ActivationMatrix>> activations = this.feedForward(input);
+        Pair<ActivationMatrix,ActivationMatrix> outputPair = activations.getLast();
+        ActivationMatrix output = outputPair.getA();
+        ActivationMatrix outputPreAF = outputPair.getB();
 
-        // gradient de la taille de la dernière couche
-        GradientVector firstGradient = new GradientVector(layers.getLast().size());
+        ActivationMatrix derivativeOnActivation = outputPreAF.applyFunction(getLastLayer().getActivationFunction().derivativeFunction);
 
-        for(Layer layer : layers.reversed()){
-            GradientVector newGradient = new GradientVector(layer.size());
-         //   lossFunction.derivative.apply(1
+        GradientMatrix firstGradient = lossFunction.derivative.apply(output,expectedOutput)
+                .hadamardProduct(derivativeOnActivation);
 
+        res.add(firstGradient);
+
+        GradientMatrix currentGradient = firstGradient;
+
+        for(int i = layers.size() - 1; i >= 0; i--){
+            Layer layer = this.layers.get(i);
+            WeightMatrix weightOfLayer = layer.getWeightMatrix();
+            ActivationMatrix preActivation = activations.get(i).getB();
+
+            ActivationMatrix derivativeActivation = preActivation.applyFunction(layer.getActivationFunction().derivativeFunction);
+            currentGradient = currentGradient.multiply(weightOfLayer.transpose())
+                    .hadamardProduct(derivativeActivation);
+            res.add(currentGradient);
         }
 
+        return res;
+    }
+
+    // TODO
+    public void backPropagate(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction) {
+        List<GradientMatrix> gradients = this.gradientDescent(input, expectedOutput, lossFunction);
     }
 
     public static MLPBuilder builder( int dimInput){
@@ -88,6 +121,10 @@ public class MLP {
             this.layers.get(i).print();;
             System.out.println();
         }
+    }
+
+    public Layer getLastLayer(){
+        return this.layers.getLast();
     }
 
 

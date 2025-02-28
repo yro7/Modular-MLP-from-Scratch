@@ -11,4 +11,8 @@ public class Pair<A,B> {
         return objectB;
     }
 
+    public Pair(A objectA, B objectB) {
+        this.objectA = objectA;
+        this.objectB = objectB;
+    }
 }

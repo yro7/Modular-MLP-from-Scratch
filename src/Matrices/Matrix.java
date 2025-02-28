@@ -9,8 +9,6 @@ import java.util.function.Function;
  */
         // CRTP pour method chaining avec préservation de type
         // c'est pas très joli mais c'est utile
-    // TODO faire un type de matrix générique qui peut prendre <? extends Number> pour ne pas
-    // TODO etre restreint à des doubles.
 public abstract class Matrix<T extends Matrix<T>> {
 
     double[][] data;
@@ -48,6 +46,10 @@ public abstract class Matrix<T extends Matrix<T>> {
 
     public int getNumberOfRows(){
         return this.getData().length;
+    }
+
+    public GradientMatrix toGradientMatrix() {
+        return new GradientMatrix(this.data);
     }
 
     // Interface qui permet d'itérer sur les éléments de la matrice
@@ -206,7 +208,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public T transpose(){
         T newMatrix = this.createInstance(getNumberOfColumns(), getNumberOfRows());
-        this.applyToElements((i,j) -> newMatrix.data[i][j] = this.data[j][i]);
+        this.applyToElements((i,j) -> newMatrix.data[j][i] = this.data[i][j]);
         return newMatrix;
     }
 
@@ -272,35 +274,58 @@ public abstract class Matrix<T extends Matrix<T>> {
                 && this.getNumberOfRows() == matrix.getNumberOfRows();
     }
 
-    /** Renvoie un nouveau vecteur dont chaque composante est
-     * le logarithme népérien (log base e) de l'ancien;
+    /** Applique la fonction signum chaque composante de la matrice
+     * Puis la renvoie. Les composantes < 0 vaudront -1, celles > 0 vaudront, celles égales à 0, 0.
      * C'est une opération intermédiaire.
-     * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
+     * @return La même matrice dont les élements correspondent au {@link Integer#signum(int)} des composantes actuelles.
+     */
+    public T sign() {
+        return this.applyFunction(d -> (double) Integer.signum(d.compareTo(0.0)));
+    }
+
+    /** Applique le logarithme népérien à chaque composante de la matrice
+     * Puis la renvoie.
+     * C'est une opération intermédiaire.
+     * @return La même matrice dont les élements correspondent au log-e des composantes actuelles.
      */
     public T log(){
         return this.applyFunction(Math::log);
     }
 
-    /** Renvoie un nouveau vecteur dont chaque composante est
-     * le cosinus hyperbolique de l'ancien;
+    /** Applique la fonction cosinus hyperbolique à chaque composante de la matrice
+     * Puis la renvoie.
      * C'est une opération intermédiaire.
-     * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
+     * @return La même matrice dont les élements correspondent au cosh des composantes actuelles.
      */
     public T cosh(){
         return this.applyFunction(Math::cosh);
     }
 
-    /** Renvoie un nouveau vecteur dont chaque composante est
-     * le carré de l'ancien.
+    /** Applique la fonction carrée à chaque composante de la matrice
+     * Puis la renvoie.
      * C'est une opération intermédiaire.
-     * @return Un nouveau vecteur d'activation dont les élements correspondent au cosh de l'ancien.
+     * @return La même matrice dont les élements correspondent au carré des composantes actuelles.
      */
     public T square(){
         return this.applyFunction(d -> Math.pow(d,2));
     }
 
+    /** Multiplie chaque composante de la matrice par un scalaire,
+     * Puis la renvoie.
+     * C'est une opération intermédiaire.
+     * @return La même matrice où chaque composante est le produit d'elle-même par le scalaire.
+     */
     public T multiply(double scalar){
         return this.applyFunction(d -> d*scalar);
+    }
+
+    /** Divise chaque composante de la matrice par un scalaire,
+     * Puis la renvoie.
+     * C'est une opération intermédiaire.
+     * @return La même matrice où chaque composante est la division d'elle-même par le scalaire.
+     */
+    public T divide(double scalar){
+        return this.applyFunction(d -> d / scalar);
     }
 
     public void print(){

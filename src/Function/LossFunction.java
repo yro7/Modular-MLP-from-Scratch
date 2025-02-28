@@ -1,6 +1,7 @@
 package Function;
 
 import Matrices.ActivationMatrix;
+import Matrices.GradientMatrix;
 
 import java.util.function.BiFunction;
 
@@ -13,7 +14,8 @@ public enum LossFunction {
      */
     MSE(
             (y_output,y_true) -> (y_output.substract(y_true).square().sum()) / y_output.size(),
-            (y,y2) -> y.substract(y2).multiply(2).sum()
+            (y,y_true) -> y.substract(y_true).multiply(2)
+                    .divide(y.size()).toGradientMatrix()
     ),
 
     /**
@@ -21,7 +23,8 @@ public enum LossFunction {
      */
     MAE(
             (y_output,y_true) -> Math.abs(y_output.substract(y_true).sum()),
-            (y,y2) -> y.substract(y2).multiply(2).sum()
+            (y,y_true) -> y.substract(y_true)
+                    .divide(y.size()).sign().toGradientMatrix()
 
     ),
 
@@ -31,15 +34,15 @@ public enum LossFunction {
 
     LogCosh(
             (y_output,y_true) -> y_output.substract(y_true).cosh().log().sum(),
-            (y,y2) -> y.substract(y2).multiply(2).sum()
+            (y,y2) -> y.substract(y2).multiply(2).toGradientMatrix()
     );
 
 
     public final BiFunction<ActivationMatrix,ActivationMatrix, Double> lossFunction;
-    public final BiFunction<ActivationMatrix,ActivationMatrix, Double> derivative;
+    public final BiFunction<ActivationMatrix,ActivationMatrix, GradientMatrix> derivative;
 
     LossFunction(BiFunction <ActivationMatrix,ActivationMatrix,Double> lossFunction,
-            BiFunction <ActivationMatrix,ActivationMatrix,Double> derivative){
+            BiFunction <ActivationMatrix,ActivationMatrix,GradientMatrix> derivative){
         this.lossFunction = lossFunction;
         this.derivative = derivative;
     }
