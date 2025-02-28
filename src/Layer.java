@@ -53,10 +53,22 @@ public class Layer {
      * @return Le nouveau vecteur d'activation de cette couche.
      */
     public ActivationMatrix computeNewActivationMatrix(ActivationMatrix activationsOfPreviousLayer) {
+        return computePreFunctionNewActivationMatrix(activationsOfPreviousLayer)
+                .applyFunction(activationFunction.function); // A' = f(A) = f(WxA + B)
+    }
+
+    /**
+     * Renvoie WxA + B où W est la matrice de poids, A la matrice d'activation actuelle,
+     * B le vecteur biais, f la fonction d'activation de la couche.
+     *
+     * Calcule donc les activations des neuronnes de cette couche.
+     * @param activationsOfPreviousLayer Le vecteur d'activation de la couche précédente
+     * @return Le nouveau vecteur d'activation de cette couche.
+     */
+    public ActivationMatrix computePreFunctionNewActivationMatrix(ActivationMatrix activationsOfPreviousLayer) {
         return activationsOfPreviousLayer
                 .multiplyAtRightByWeightMatrix(weightMatrix)  // Performe A' = W*A
-                .addBiasVector(this.biasVector) // A' = A + B
-                .applyFunction(d -> this.activationFunction.apply(d)); // A = f(A)
+                .addBiasVector(this.biasVector); // A' = A + B
     }
 
     public ActivationFunction getActivationFunction(){
