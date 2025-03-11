@@ -38,4 +38,8 @@ public class WeightMatrix extends Matrix<WeightMatrix> {
         });
     }
 
+    public void printDimensions(String name) {
+        super.printDimensions("Weight", name);
+    }
+
 }

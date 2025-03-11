@@ -5,10 +5,9 @@ import Matrices.GradientMatrix;
 
 import java.util.function.BiFunction;
 
-public enum LossFunction {
+public enum LossFunction implements BiFunction<ActivationMatrix, ActivationMatrix, Double>{
 
 
-    // TODO   mettre les bonnes dérivées
     /**
      * Mean Squared Error loss function (Erreur moyenne au carré).
      */
@@ -47,7 +46,7 @@ public enum LossFunction {
         this.derivative = derivative;
     }
 
-    public double apply(ActivationMatrix networkOutput, ActivationMatrix input) {
+    public Double apply(ActivationMatrix networkOutput, ActivationMatrix input) {
         return this.lossFunction.apply(networkOutput, input);
     }
 }

@@ -3,14 +3,16 @@ import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
 import Matrices.WeightMatrix;
 
+import java.util.function.Function;
+
 public class Layer {
 
-    private WeightMatrix weightMatrix;
+    public WeightMatrix weightMatrix;
 
     /**
      * Le biais de chaque neurone. Si la couche possède n neurones, la {@link Matrices.Matrix} {@link BiasVector} sera de dimension n*1.
      */
-    private BiasVector biasVector;
+    public BiasVector biasVector;
     /** La <a href="https://en.wikipedia.org/wiki/Activation_function">Fonction d'Activationf</a> à utiliser dans cette couche du réseau de neurones.
      * Cette architecture ne permet donc pas d'avoir une {@link ActivationFunction} différente par neurone de la couche
      * (la couche est neuron-agnostique, elle ne possède pas d'objet "neurone" à proprement parler), mais à part dans certaines architectures
@@ -79,4 +81,11 @@ public class Layer {
         return this.getWeightMatrix().getNumberOfRows();
     }
 
+    public Function<Double,Double> getDerivativeOfAF(){
+        return this.getActivationFunction().getDerivative();
+    }
+
+    public BiasVector getBiasVector(){
+        return this.biasVector;
+    }
 }

@@ -48,5 +48,8 @@ public enum ActivationFunction implements Function<Double,Double> {
         return this.getInitializationFunction().getRandomBias.apply(n,p);
     }
 
+    public Function<Double, Double> getDerivative() {
+        return this.derivativeFunction;
+    }
 }
 
