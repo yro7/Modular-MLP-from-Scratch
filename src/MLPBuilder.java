@@ -21,6 +21,12 @@ public class MLPBuilder {
         return new MLP(this.layers, dimInput);
     }
 
+    /**
+     * Est utilisé lors de l'initialization aléatoire des poids du réseau de neurones, dans
+     * {@link InitializationFunction}.
+     * @param seed
+     * @return
+     */
     public MLPBuilder setRandomSeed(long seed){
         ActivationFunction.randomGenerator = new Random(seed);
         return this;

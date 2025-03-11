@@ -14,6 +14,8 @@ public abstract class Matrix<T extends Matrix<T>> {
     double[][] data;
 
     public Matrix(int rows, int cols) {
+        assert(rows > 0) : "Le nombre de lignes doit être supérieur à 0 (" + rows + ").";
+        assert(cols > 0) : "Le nombre de colonnes doit être supérieur à 0 (" + cols + ").";
         data = new double[rows][cols];
     }
 
@@ -31,6 +33,10 @@ public abstract class Matrix<T extends Matrix<T>> {
 
     protected abstract T createInstance(int rows, int cols);
 
+    /**
+     * Permet de retourner la matrice de même type que celle sur laquelle on applique la fonction (pour préserver les types lors du chaining)
+     * @return Soi-même
+     */
     @SuppressWarnings("unchecked")
     protected T self() {
         return (T) this;
@@ -41,11 +47,17 @@ public abstract class Matrix<T extends Matrix<T>> {
     }
 
     public int getNumberOfColumns(){
+        if (data == null || data.length == 0) {
+            return 0;
+        }
         return this.getData()[0].length;
     }
 
     public int getNumberOfRows(){
-        return this.getData().length;
+        if (data == null) {
+            return 0;
+        }
+        return this.data.length;
     }
 
     public GradientMatrix toGradientMatrix() {
@@ -67,7 +79,7 @@ public abstract class Matrix<T extends Matrix<T>> {
 
         for(int i = 0; i < this.getNumberOfRows(); i++){
             for(int j = 0; j < this.getNumberOfColumns(); j++){
-                operation.apply(i,j);
+                operation.apply(i, j);
             }
         }
     }
@@ -79,12 +91,12 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @param action l'action a effectuer.
      */
     public T forEach(Consumer<? super Double> action){
-        applyToElements((i,j) -> action.accept(this.data[i][j]));
+        applyToElements((i,j) -> action.accept(data[i][j]));
         return self();
     }
 
     /**
-     * Renvoie une nouvelle matrice dont les coefficients sont égaux à la matrice actuelle.
+     * Renvoie une NOUVELLE matrice dont les coefficients sont égaux à la matrice actuelle.
      * C'est une opération intermédiaire.
      * @return
      */
@@ -123,7 +135,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public T elementWiseOperation(BiFunction<Double,Double,Double> function, Matrix<?> matrix){
         verifyDimensions(matrix);
-        applyToElements((i,j) -> function.apply(this.data[i][j], matrix.getData()[i][j]));
+        applyToElements((i,j) -> this.data[i][j] = function.apply(this.data[i][j], matrix.getData()[i][j]));
         return self();
     }
 
@@ -135,7 +147,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @return la même matrice modifiée par la fonction
      */
     public T applyFunction(Function<Double,Double> function){
-        this.forEach(function::apply);
+        this.applyToElements((i,j) -> this.data[i][j] = function.apply(this.data[i][j]));
         return self();
     }
 
@@ -160,17 +172,19 @@ public abstract class Matrix<T extends Matrix<T>> {
         int newNumberOfRows = this.getNumberOfRows();
         int newNumberOfColumns = matrix.getNumberOfColumns();
         T newMatrix = createInstance(newNumberOfRows, newNumberOfColumns);
-        newMatrix.applyToElements((i,j) -> {
-            for(int k = 0; k < newNumberOfRows; k++){
-                newMatrix.getData()[i][j] += this.getData()[i][k]*matrix.getData()[k][j];
+        newMatrix.applyToElements((i, j) -> {
+            double sum = 0;
+            for(int k = 0; k < this.getNumberOfColumns(); k++){
+                sum += this.getData()[i][k] * matrix.getData()[k][j];
             }
+            newMatrix.data[i][j] = sum;
         });
 
         return newMatrix;
     }
 
     /**
-     * Renvoie une NOUVELLE matrice qui correspond au produit de la matrice actuelle
+     * Renvoie une NOUVELLE matrice qui correspond au produit BxA de la matrice actuelle
      * ainsi que de la matrice passée en argument.
      * C'est une opération intermédiaire. (/!\ non commutative).
      *
@@ -180,23 +194,24 @@ public abstract class Matrix<T extends Matrix<T>> {
      * Attention, les dimensions de la nouvelle matrice ne sont pas forcément égales
      * aux dimensions de l'ancienne.
      * @param matrix la matrice par laquelle on multiplie
-     * @return une nouvelle matrice produit des 2.
+     * @return BxA une nouvelle matrice produit des 2.
      */
     public T multiplyAtRight(Matrix<?> matrix) {
-        assert(matrix.getNumberOfColumns() == this.getNumberOfRows()) : "Matrices incompatibles pour un produit AxB :"
+
+        assert(matrix.getNumberOfColumns() == this.getNumberOfRows()) : "Matrices incompatibles pour un produit BxA :"
                 + " Nombre de colonnes de A : " + this.getNumberOfColumns()
                 + " Nombre de lignes de B : " + matrix.getNumberOfRows();
+
 
         int newNumberOfRows = matrix.getNumberOfRows();
         int newNumberOfColumns = this.getNumberOfColumns();
         T newMatrix = createInstance(newNumberOfRows, newNumberOfColumns);
-
-        newMatrix.applyToElements((i,j) -> {
-            double sum = 0.0;
-            for(int k = 0; k < this.getNumberOfRows(); k++) {
+        newMatrix.applyToElements((i, j) -> {
+            double sum = 0;
+            for(int k = 0; k < matrix.getNumberOfColumns(); k++){
                 sum += matrix.getData()[i][k] * this.getData()[k][j];
             }
-            newMatrix.getData()[i][j] = sum;
+            newMatrix.data[i][j] = sum;
         });
 
         return newMatrix;
@@ -225,6 +240,26 @@ public abstract class Matrix<T extends Matrix<T>> {
         return res[0];
     }
 
+    /**
+     * Si this est une matrice de taille n x p, renvoie un vecteur n x 1 dont l'élément i correspond
+     * à la somme des éléments de la i-ème ligne de la matrice.
+     * Le  renvoyer sous forme de double[][] plutôt que de double[] permet de créer directement un
+     * {@link BiasVector} à partir du résultat en évitant une copie de tableau.
+     *   1 2 3 4      10
+     *   1 2 3 0  --> 6
+     *   1 2 3 0      6
+     *
+     * @return
+     */
+    public double[][] sumOverRows(){
+        double[][] res = new double[this.getNumberOfRows()][1];
+        applyToElements((i, j) -> {
+            res[i][0] += this.getData()[i][j];
+        });
+
+        return res;
+    }
+
 
 
     /**
@@ -237,6 +272,18 @@ public abstract class Matrix<T extends Matrix<T>> {
         verifyDimensions(matrix);
         return elementWiseOperation((d1,d2) -> d1 - d2, matrix);
     }
+
+    /**
+     * Additionne une autre {@link Matrix} terme à terme à la matrice actuelle.
+     * C'est une opération intermédiaire.
+     * @param matrix la matrice de même dimension que this, qu'on soustrait
+     * @return la même {@link Matrix} qui correspond à la somme terme à terme.
+     */
+    public T add(Matrix<?> matrix){
+        verifyDimensions(matrix);
+        return elementWiseOperation(Double::sum, matrix);
+    }
+
 
     /**
      * Multiplie une autre {@link Matrix} terme à terme à la matrice actuelle.
@@ -255,10 +302,10 @@ public abstract class Matrix<T extends Matrix<T>> {
      * C'est une opération terminale.
      * @param matrix
      */
-    private void verifyDimensions(Matrix<?> matrix) {
+    public void verifyDimensions(Matrix<?> matrix) {
         assert(this.hasSameDimensions(matrix)) : "Les matrices ne sont pas de même dimensions !"
-                + " Matrice A : " + this.getNumberOfRows()+ " * " + this.getNumberOfColumns()
-                + " Matrice B : " + matrix.getNumberOfRows()+ " * " + matrix.getNumberOfColumns();
+                + " Matrice A : " + this.getNumberOfRows()+ " x " + this.getNumberOfColumns()
+                + " Matrice B : " + matrix.getNumberOfRows()+ " x " + matrix.getNumberOfColumns();
 
     }
 
@@ -269,7 +316,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @param matrix la matrice à tester
      * @return True si elles ont les mêmes dimensions, False sinon
      */
-    private boolean hasSameDimensions(Matrix<?> matrix) {
+    public boolean hasSameDimensions(Matrix<?> matrix) {
         return this.getNumberOfColumns() == matrix.getNumberOfColumns()
                 && this.getNumberOfRows() == matrix.getNumberOfRows();
     }
@@ -345,6 +392,7 @@ public abstract class Matrix<T extends Matrix<T>> {
         return this.getNumberOfColumns()*this.getNumberOfRows();
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Matrix<?>> T createIdentity(int n){
         T identity = (T) createInstance(n,n);
         identity.applyToElements((i,j) -> {
@@ -353,4 +401,22 @@ public abstract class Matrix<T extends Matrix<T>> {
 
         return identity;
     }
+
+
+    /**
+     * Utilisé pour du debug pour visualiser facilement les dimensions d'une matrice.
+     * @param type - le type de matrix utilisé, i.e Weight, Activation... Est override dans les classes respectives.
+     * @param name - le nom à donner dans le sysout, pour différencier les matrices les unes des autres.
+     */
+    public void printDimensions(String type, String name){
+        System.out.println(type + "Matrix " + name + " has dimensions " + this.getNumberOfRows()+","+this.getNumberOfColumns() + ".");
+    }
+
+    /**
+     *
+     */
+    public double norm(){
+        return Math.sqrt(this.square().sum());
+    }
+
 }

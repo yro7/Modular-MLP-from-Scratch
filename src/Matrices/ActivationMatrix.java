@@ -47,5 +47,9 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
         return this.multiplyAtRight(weightMatrix);
     }
 
+    public void printDimensions(String name) {
+        super.printDimensions("Activation", name);
+    }
+
 
 }
