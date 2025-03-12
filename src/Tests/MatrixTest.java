@@ -142,14 +142,6 @@ public class MatrixTest {
         Matrix<?> matrixE = new ConcreteMatrix(dataE);
         Matrix<?> result = matrixE.log();
 
-        System.out.println(" aaa ");
-
-        matrixE.print();
-        System.out.println(" aaa ");
-        result.print();
-        System.out.println(" aaa ");
-        System.out.println(" aaa ");
-
         assertEquals(0.0, result.getData()[0][0], 1e-9);
         assertEquals(1.0, result.getData()[0][1], 1e-9);
         assertEquals(2.0, result.getData()[0][2], 1e-9);

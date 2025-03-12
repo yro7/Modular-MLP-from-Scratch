@@ -20,17 +20,17 @@ public class Main {
                 .addLayer(12, ReLU)
                 .addLayer(17, ActivationFunction.ReLU)
                 .addLayer(24, ActivationFunction.Sigmoid)
+                .addLayer(24, ActivationFunction.Sigmoid)
+                .addLayer(24, ActivationFunction.Sigmoid)
                 .addLayer(36, ActivationFunction.Sigmoid)
                 .build();
 
         ActivationMatrix batchInput = new ActivationMatrix(creerTableau(43,10));
         ActivationMatrix batchTheorique = new ActivationMatrix(creerTableau(36,10));
 
-
-        mlp.printNorms();
-        mlp.feedForward(batchInput);
-        mlp.feedForward(batchInput);
-        mlp.printNorms();
+        printLoss(mlp, batchInput, batchTheorique);
+        loopBackpro(mlp, batchInput, batchTheorique, 10000);
+        printLoss(mlp, batchInput, batchTheorique);
 
 
         //mlp.backpropagate(batchInput, batchTheorique, MSE);
@@ -58,7 +58,10 @@ public class Main {
         IntStream.range(1,n).forEach(i -> {
             mlp.backpropagate(batchInput, batchTheorique, MSE);
     });
+    }
 
+    public static void printLoss(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique){
+        System.out.println("Loss : " + mlp.computeLoss(batchInput, batchTheorique, MSE));
     }
 
 

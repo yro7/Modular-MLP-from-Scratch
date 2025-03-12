@@ -12,9 +12,6 @@ import java.util.List;
 
 public class MLP {
 
-    public int DEBUG_LAYER = 0;
-    public int DEBUG_PASSAGE = 0;
-
     private final int dimInput;
     private final List<Layer> layers;
 
@@ -36,26 +33,21 @@ public class MLP {
         assert(input.getNumberOfRows() == dimInput) : "Erreur : dim d'entrée attendue = " + dimInput + " , obtenue : " + input.getNumberOfRows() + ".";
 
         List<Pair<ActivationMatrix,ActivationMatrix>> res = new ArrayList<>();
-        ActivationMatrix preFunctionActivationMatrix = input.clone();
-        ActivationMatrix newActivationMatrix = input.clone();
+        ActivationMatrix newActivationMatrix = input;
+
 
         for(Layer layer : layers){
 
             // Calcul de W*A + B
-            preFunctionActivationMatrix = layer.computePreFunctionNewActivationMatrix(newActivationMatrix);
+            ActivationMatrix preFunctionActivationMatrix = layer.computePreFunctionNewActivationMatrix(newActivationMatrix);
             // Calcul de f(WxA + B)
-            newActivationMatrix = preFunctionActivationMatrix.applyFunction(layer.getActivationFunction());
-            res.add(new Pair<>(newActivationMatrix, preFunctionActivationMatrix));
+            newActivationMatrix = preFunctionActivationMatrix
+                    .clone() // Nécessaire pour éviter de modifier preFunctionActivationMatrix
+                    .applyFunction(layer.getActivationFunction());
 
-            System.out.println("Layer n° " + DEBUG_LAYER);
-            System.out.println("Norme " + newActivationMatrix.norm());
-            System.out.println("Norme des poids " + layer.getWeightMatrix().norm());
-            DEBUG_LAYER++;
+            res.add(new Pair<>(newActivationMatrix, preFunctionActivationMatrix));
         }
 
-        DEBUG_LAYER = 0;
-        System.out.println();
-        System.out.println();
 
         return res; // TODO FIX FEED FORWARD
     }
@@ -68,8 +60,6 @@ public class MLP {
      */
     public double computeLoss(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction){
         ActivationMatrix networkOutput = feedForward(input).getLast().getA();
-        System.out.println("Passage " + DEBUG_PASSAGE + " : " + networkOutput.norm());
-        DEBUG_PASSAGE++;
         return lossFunction.apply(networkOutput, expectedOutput);
     }
 
@@ -85,8 +75,9 @@ public class MLP {
     public void backpropagate(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction){
         List<Pair<GradientMatrix,BiasVector>> gradients = gradientDescent(input, expectedOutput, lossFunction);
 
+        gradients.forEach(p -> System.out.println(" : " + p.getA().norm()));
         // TODO IMPLEMENT OPTIMIZERS
-        double learningRate = 0.000001;
+        double learningRate = 1;
 
         for(int l = 0; l < this.layers.size(); l++){
             GradientMatrix weightCorrection = gradients.get(l).getA().multiply(learningRate);
@@ -99,8 +90,6 @@ public class MLP {
                     .substract(weightCorrection);
             currentLayer.biasVector = currentLayer.getBiasVector().
                     substract(biasGradient);
-
-
         }
 
     }
@@ -167,6 +156,7 @@ public class MLP {
             // Finalement : calcul du gradient des poids et du biais
 
             GradientMatrix weightGradient = delta_l.multiply(a_l_minus_1.transpose());
+
             BiasVector biasGradient = delta_l.sumErrorTerm();
             Pair<GradientMatrix, BiasVector> layerGradient = new Pair<>(weightGradient, biasGradient);
             result.add(layerGradient);
