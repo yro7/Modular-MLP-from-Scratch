@@ -42,4 +42,13 @@ public class WeightMatrix extends Matrix<WeightMatrix> {
         super.printDimensions("Weight", name);
     }
 
+    public static WeightMatrix createIdentityMatrix(int dimension) {
+        double[][] data = new double[dimension][dimension];
+        for(int i = 0; i < dimension; i++){
+            data[i][i] = 1.0;
+        }
+        return new WeightMatrix(data);
+    }
+
+
 }

@@ -1,3 +1,5 @@
+package MLP;
+
 public class Pair<A,B> {
 
     A objectA;
