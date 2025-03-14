@@ -3,23 +3,28 @@ package Function;
 import java.util.Random;
 import java.util.function.Function;
 
+import static Function.InitializationFunction.*;
+
 public enum ActivationFunction implements Function<Double,Double> {
 
 
-    ReLU(InitializationFunction.He, a -> Math.max(0, a),
+    ReLU(He, a -> Math.max(0, a),
             d -> (double) Integer.signum(d.compareTo(0.0))
-            ),
+    ),
 
-    TanH(InitializationFunction.Xavier, Math::tanh,
+    TanH(Xavier, Math::tanh,
             d -> 1 - Math.pow(Math.tan(d),2)
     ),
 
-    Sigmoid(InitializationFunction.LeCun, a -> 1 / (1 + Math.exp(-a)),
+    Sigmoid(LeCun,
+            a -> 1 / (1 + Math.exp(-a)),
             d -> (1/(1 + Math.exp(-d)) * (1 - 1/(1 + Math.exp(-d))))
-            );
+            ),
 
-    /**SoftMax(InitializationFunction.LeCun,
-            a -> 1 / (1 + Math.exp(-a)), d -> 0.0 );**/  // TODO SOFTMAX IMPLEMENTATION
+
+    Identity(Xavier, d -> d, d -> 1.0);
+
+     // TODO SOFTMAX IMPLEMENTATION : change implements double double to implements matrix double.
 
     public static Random randomGenerator = new Random();
 

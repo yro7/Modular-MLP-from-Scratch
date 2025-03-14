@@ -5,7 +5,7 @@ import Matrices.GradientMatrix;
 
 import java.util.function.BiFunction;
 
-public enum LossFunction implements BiFunction<ActivationMatrix, ActivationMatrix, Double>{
+public enum LossFunction implements BiFunction<ActivationMatrix, ActivationMatrix, Double> {
 
 
     /**
@@ -48,5 +48,9 @@ public enum LossFunction implements BiFunction<ActivationMatrix, ActivationMatri
 
     public Double apply(ActivationMatrix networkOutput, ActivationMatrix input) {
         return this.lossFunction.apply(networkOutput, input);
+    }
+
+    public GradientMatrix applyDerivative(ActivationMatrix output, ActivationMatrix expected) {
+        return this.derivative.apply(output, expected);
     }
 }

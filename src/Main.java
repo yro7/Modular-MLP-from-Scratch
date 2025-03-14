@@ -1,12 +1,14 @@
-import Function.ActivationFunction;
+import MLP.MLP;
 import Matrices.*;
 
-import javax.swing.text.Position;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.IntStream;
+import MLP.Pair;
+
+import javax.swing.text.Position;
 
 import static Function.ActivationFunction.ReLU;
+import static Function.ActivationFunction.Sigmoid;
 import static Function.LossFunction.MSE;
 
 public class Main {
@@ -16,20 +18,19 @@ public class Main {
         MLP mlp = MLP.builder(43)
                 .setRandomSeed(2)
                 .addLayer(7, ReLU)
-                .addLayer(3, ActivationFunction.ReLU)
-                .addLayer(12, ReLU)
-                .addLayer(17, ActivationFunction.ReLU)
-                .addLayer(24, ActivationFunction.Sigmoid)
-                .addLayer(24, ActivationFunction.Sigmoid)
-                .addLayer(24, ActivationFunction.Sigmoid)
-                .addLayer(36, ActivationFunction.Sigmoid)
+                .addLayer(3, ReLU)
+                .addLayer(17, ReLU)
+                .addLayer(24, ReLU)
+                .addLayer(24, ReLU)
+                .addLayer(4, ReLU)
+                .addLayer(8, Sigmoid)
                 .build();
 
-        ActivationMatrix batchInput = new ActivationMatrix(creerTableau(43,10));
-        ActivationMatrix batchTheorique = new ActivationMatrix(creerTableau(36,10));
+        ActivationMatrix batchInput = new ActivationMatrix(creerTableau(43,1));
+        ActivationMatrix batchTheorique = new ActivationMatrix(creerTableau(8,1));
 
         printLoss(mlp, batchInput, batchTheorique);
-        loopBackpro(mlp, batchInput, batchTheorique, 10000);
+        loopBackpro(mlp, batchInput, batchTheorique, 500);
         printLoss(mlp, batchInput, batchTheorique);
 
 
@@ -56,7 +57,7 @@ public class Main {
 
     public static void loopBackpro(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique, int n){
         IntStream.range(1,n).forEach(i -> {
-            mlp.backpropagate(batchInput, batchTheorique, MSE);
+            mlp.updateParameters(batchInput, batchTheorique, MSE);
     });
     }
 

@@ -24,6 +24,11 @@ public class BiasVector extends Matrix<BiasVector> {
         this.applyToElements((i,j) -> this.getData()[i][j] = af.applyRandomBias(rows,numberOfNeuronsInPreviousLayer));
     }
 
+    public static BiasVector createZeroBiasVector(int dimension) {
+        double[][] data = new double[dimension][1];
+        return new BiasVector(data);
+    }
+
     @Override
     protected BiasVector createInstance(int rows, int cols) {
         assert(cols == 1) : "Un Vecteur de Biais devrait être de largeur 1 ! Taille rentrée: "

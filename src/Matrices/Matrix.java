@@ -1,5 +1,6 @@
 package Matrices;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -507,5 +508,23 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public double norm(){
         return Math.sqrt(this.square().sum());
+    }
+
+    public boolean equals(Matrix<?> matrix){
+        if(this.getNumberOfRows() != matrix.getNumberOfRows()
+                || this.getNumberOfColumns() != matrix.getNumberOfColumns()) {
+            return false;
+        }
+
+        AtomicBoolean res = new AtomicBoolean(true);
+        this.applyToElements((i,j) -> {
+            if (this.getData()[i][j] != matrix.getData()[i][j]) res.set(false);
+        });
+
+        return res.get();
+    }
+
+    public void printNorm() {
+        System.out.println("Norme : " + this.norm());
     }
 }

@@ -1,3 +1,5 @@
+package MLP;
+
 import Function.ActivationFunction;
 import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
@@ -19,6 +21,12 @@ public class Layer {
      * précises (voir <a href="https://www.ibm.com/think/topics/mixture-of-experts">Mixture of Experts</a>) cela n'est généralement pas une bonne chose à avoir.
      */
     private ActivationFunction activationFunction;
+
+    public Layer(WeightMatrix weightMatrix, BiasVector biasVector, ActivationFunction activationFunction) {
+        this.weightMatrix = weightMatrix;
+        this.biasVector = biasVector;
+        this.activationFunction = activationFunction;
+    }
 
     public WeightMatrix getWeightMatrix() {
         return weightMatrix;
@@ -55,7 +63,7 @@ public class Layer {
      * @return Le nouveau vecteur d'activation de cette couche.
      * @immutable ne modifie pas la matrice passée en argument
      */
-    public ActivationMatrix computePreFunctionNewActivationMatrix(ActivationMatrix activationsOfPreviousLayer) {
+    public ActivationMatrix multiplyByWeightsAndAddBias(ActivationMatrix activationsOfPreviousLayer) {
         return activationsOfPreviousLayer
                 .multiplyAtRightByWeightMatrix(weightMatrix)  // Performe A' = W*A
                 .addBiasVector(this.biasVector); // A' = A + B
@@ -65,6 +73,10 @@ public class Layer {
         return this.activationFunction;
     }
 
+    /**
+     * Renvoie le nombre de lignes dans la matrice de poids de la couche, i.e le nombre de neurones de la couche.
+     * @return le nombre de neurones dans la couche.
+     */
     public int size(){
         return this.getWeightMatrix().getNumberOfRows();
     }
