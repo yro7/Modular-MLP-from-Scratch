@@ -33,21 +33,21 @@ public abstract class Matrix<T extends Matrix<T>> {
 
     /**
      * Constructeur à partir d'un tableau bidimensionnel.
-     *
+     * Effectue une copie du tableau pour créer la nouvelle matrice.
      * @param data Tableau 2D de valeurs double
      */
     public Matrix(double[][] data) {
-        this.data = data;
+        this.data = data.clone();
     }
 
     /**
      * Constructeur de copie à partir d'une autre matrice.
-     *
+     * Effectue une copie profonde de la matrice source.
      * @param source La matrice à copier
      */
     public Matrix(Matrix<?> source){
         this(source.getNumberOfRows(), source.getNumberOfColumns());
-        applyToElements((i,j) -> this.data[i][j] = source.data[i][j]);
+        this.data = source.data.clone();
     }
 
     /**
@@ -196,7 +196,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public T elementWiseOperation(BiFunction<Double,Double,Double> function, Matrix<?> matrix){
         verifyDimensions(matrix);
-        applyToElements((i,j) -> this.data[i][j] = function.apply(this.data[i][j], matrix.getData()[i][j]));
+        applyToElements((i,j) -> this.data[i][j] = function.apply(this.getData()[i][j], matrix.getData()[i][j]));
         return self();
     }
 
@@ -228,6 +228,7 @@ public abstract class Matrix<T extends Matrix<T>> {
                 + " Nombre de lignes de B : " + matrix.getNumberOfRows();
         int newNumberOfRows = this.getNumberOfRows();
         int newNumberOfColumns = matrix.getNumberOfColumns();
+
         T newMatrix = createInstance(newNumberOfRows, newNumberOfColumns);
         newMatrix.applyToElements((i, j) -> {
             double sum = 0;
@@ -312,7 +313,29 @@ public abstract class Matrix<T extends Matrix<T>> {
         return res;
     }
 
+
     /**
+     * Calcule la somme des éléments de chaque colonne.
+     * Si la matrice est de taille n x p, renvoie un vecteur p x 1.
+     *
+     * @return Un tableau 2D représentant les sommes par ligne
+     * @immutable Ne modifie pas la matrice actuelle
+     * @terminale Renvoie une valeur finale et termine la chaîne d'opérations
+     */
+    public double[][] sumOverColumns(){
+        double[][] res = new double[this.getNumberOfColumns()][1];
+        applyToElements((i, j) -> {
+            res[i][0] += this.getData()[i][j];
+        });
+
+        return res;
+    }
+
+    /**
+     * 
+     *  1 2 3 4
+     *  5 6 7 8
+     *  9 0 0 0
      * Soustrait une autre matrice à celle-ci élément par élément.
      *
      * @param matrix La matrice à soustraire
@@ -411,6 +434,17 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public T cosh(){
         return this.applyFunction(Math::cosh);
+    }
+
+    /**
+     * Applique la tangente hyperbolique à chaque élément de la matrice.
+     *
+     * @return La matrice modifiée
+     * @mutable Cette méthode modifie la matrice actuelle
+     * @intermédiaire Renvoie this pour permettre le chaînage
+     */
+    public T tanh(){
+        return this.applyFunction(Math::tanh);
     }
 
     /**
@@ -524,7 +558,12 @@ public abstract class Matrix<T extends Matrix<T>> {
         return res.get();
     }
 
+    /**
+     * Affiche la norme de la matrice.
+     * @mutable Modifie la matrice actuelle
+     * @terminale Renvoie une valeur finale et termine la chaîne d'opérations
+     */
     public void printNorm() {
-        System.out.println("Norme : " + this.norm());
+        System.out.println("Norme : " + this.clone().norm());
     }
 }
