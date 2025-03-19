@@ -87,4 +87,13 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
     public void printDimensions(String name) {
         super.printDimensions("Activation", name);
     }
+
+    /**
+     * Renvoie la taille du batch de la matrice d'activation,
+     * càd le nombre de colonnes de la matrice.
+     * @return
+     */
+    public int getBatchSize(){
+        return this.getNumberOfColumns();
+    }
 }

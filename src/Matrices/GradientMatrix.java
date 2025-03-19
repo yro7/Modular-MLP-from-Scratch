@@ -29,9 +29,9 @@ public class GradientMatrix extends Matrix<GradientMatrix> {
      * delta_l qui représente le terme d'erreur d'une couche, lors de
      * l'algorithme de descente de gradient.
      * Voir {@link MLP#gradientDescent}.
-     * @return
+     * @immutable Ne modifie pas la matrice actuelle, en renvoie une nouvelle.
      */
-    public BiasVector sumErrorTerm() {
+    public BiasVector  sumErrorTerm() {
         double[][] biasVectorData = this.sumOverRows();
         return new BiasVector(biasVectorData);
     }

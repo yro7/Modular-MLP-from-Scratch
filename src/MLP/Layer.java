@@ -60,12 +60,12 @@ public class Layer {
      *
      * Calcule donc les activations des neuronnes de cette couche.
      * @param activationsOfPreviousLayer Le vecteur d'activation de la couche précédente
-     * @return Le nouveau vecteur d'activation de cette couche.
+     * @return La nouvelle matrice d'activation de cette couche.
      * @immutable ne modifie pas la matrice passée en argument
      */
     public ActivationMatrix multiplyByWeightsAndAddBias(ActivationMatrix activationsOfPreviousLayer) {
         return activationsOfPreviousLayer
-                .multiplyAtRightByWeightMatrix(weightMatrix)  // Performe A' = W*A
+                .multiplyAtRightByWeightMatrix(this.weightMatrix)  // Performe A' = W*A
                 .addBiasVector(this.biasVector); // A' = A + B
     }
 
@@ -81,6 +81,10 @@ public class Layer {
         return this.getWeightMatrix().getNumberOfRows();
     }
 
+    /**
+     * Renvoie la dérivée de la fonction d'activation de la couche.
+     * @return
+     */
     public Function<Double,Double> getDerivativeOfAF(){
         return this.getActivationFunction().getDerivative();
     }
