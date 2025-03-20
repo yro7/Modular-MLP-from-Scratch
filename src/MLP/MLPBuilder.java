@@ -26,6 +26,8 @@ public class MLPBuilder {
     }
 
     public MLP build(){
+
+        assert (!this.layers.isEmpty()) : "Le MLP doit avoir au moins une couche.";
         return new MLP(this.layers, dimInput);
     }
 

@@ -148,12 +148,11 @@ public class MLP {
             gradients.addFirst(new Pair<>(dl_dW_l, dL_db_l));
             delta_l_plus_1 = delta_l;
 
-            if(l == L-1); {
+            /**
                 System.out.println();
                 System.out.println();
                 System.out.println("Gradient de poids couche " + l);
-                dl_dW_l.print();
-            }
+                dl_dW_l.print();**/
 
 
         }
