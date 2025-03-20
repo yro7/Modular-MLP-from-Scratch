@@ -71,7 +71,7 @@ public class MLP {
 
      //   gradients.forEach(p -> System.out.println(p.getA().norm()));
         // TODO IMPLEMENT OPTIMIZERS
-        double learningRate = 0.1;
+        double learningRate = 0.01;
 
         for(int l = 0; l < this.layers.size(); l++){
             GradientMatrix weightCorrection = gradients.get(l).getA().clone().multiply(learningRate);
@@ -82,6 +82,8 @@ public class MLP {
             // TODO use setter with assert to verify dimensions
             currentLayer.getWeightMatrix().substract(weightCorrection);
             currentLayer.getBiasVector().substract(biasGradient);
+
+            weightCorrection.printNorm();
         }
 
 
