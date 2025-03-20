@@ -9,17 +9,17 @@ public enum ActivationFunction implements Function<Double,Double> {
 
 
     ReLU(He, a -> Math.max(0, a),
-            d -> (double) Integer.signum(d.compareTo(0.0))
+            d -> d > 0.0 ? 1.0 : 0.0
     ),
 
     TanH(Xavier, Math::tanh,
-            d -> 1 - Math.pow(Math.tan(d),2)
+            d -> 1 - Math.pow(Math.tanh(d), 2)
     ),
 
     Sigmoid(LeCun,
-            a -> 1 / (1 + Math.exp(-a)),
-            d -> (1/(1 + Math.exp(-d)) * (1 - 1/(1 + Math.exp(-d))))
-            ),
+            d -> sigma(d),
+            d -> sigma(d)*(1-sigma(d))
+    ),
 
 
     Identity(Xavier, d -> d, d -> 1.0);
@@ -55,6 +55,16 @@ public enum ActivationFunction implements Function<Double,Double> {
 
     public Function<Double, Double> getDerivative() {
         return this.derivativeFunction;
+    }
+
+    /**
+     * Renvoie la sigmoïde de z, càd
+     * 1 / (    1 + e^(-z)   )
+     * @param z
+     * @return
+     */
+    public static final double sigma(double z){
+        return 1/(1+Math.exp(-z));
     }
 }
 

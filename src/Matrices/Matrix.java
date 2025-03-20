@@ -28,7 +28,7 @@ public abstract class Matrix<T extends Matrix<T>> {
     public Matrix(int rows, int cols) {
         assert(rows > 0) : "Le nombre de lignes doit être supérieur à 0 (" + rows + ").";
         assert(cols > 0) : "Le nombre de colonnes doit être supérieur à 0 (" + cols + ").";
-        data = new double[rows][cols];
+        this.data = new double[rows][cols];
     }
 
     /**
