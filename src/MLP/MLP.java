@@ -1,17 +1,13 @@
 package MLP;
 
 import Function.LossFunction;
-import Function.LossFunction2;
 import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
 import Matrices.GradientMatrix;
 import Matrices.WeightMatrix;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import static Function.LossFunction.MSE;
 
 public class MLP {
 
@@ -22,8 +18,9 @@ public class MLP {
         this.layers = layers;
         this.dimInput = dimInput;
     }
+
     /**
-     * Envoie au réseau de neurones une batch ({@link ActivationMatrix}
+     * Envoie au réseau de neurones une batch ({@link ActivationMatrix}.
      * et renvoie les matrices d'activations des couches du réseau après le calcul.
      * La fonction renvoie une paire ou le premier élément de la paire est la matrice des activations
      * après application de la fonction d'activation, le second avant. (utile pour {@link #backpropagate}.
@@ -33,17 +30,16 @@ public class MLP {
      */
 
     public List<Pair<ActivationMatrix,ActivationMatrix>> feedForward(ActivationMatrix input){
-        assert(input.getNumberOfRows() == dimInput) : "Erreur : dim d'entrée attendue = " + dimInput + " , obtenue : " + input.getNumberOfRows() + ".";
+        assert(input.getNumberOfColumns() == dimInput) : "Erreur : dim d'entrée attendue = " + dimInput + " , obtenue : " + input.getNumberOfColumns() + ".";
 
         List<Pair<ActivationMatrix,ActivationMatrix>> result = new ArrayList<>();
         ActivationMatrix activationMatrixOfLayer = input;
 
 
         for(Layer layer : layers){
-
-            // Calcul de W*A + B
+            // Calcul de    AxW + B
             ActivationMatrix activationsBeforeAF = layer.multiplyByWeightsAndAddBias(activationMatrixOfLayer);
-            // Calcul de f(WxA + B)
+            // Calcul de  f(AxW + B)
             activationMatrixOfLayer = activationsBeforeAF
                     .clone() // Nécessaire pour éviter de modifier activationsBeforeAF
                     .applyFunction(layer.getActivationFunction());
@@ -82,8 +78,6 @@ public class MLP {
             // TODO use setter with assert to verify dimensions
             currentLayer.getWeightMatrix().substract(weightCorrection);
             currentLayer.getBiasVector().substract(biasGradient);
-
-            weightCorrection.printNorm();
         }
 
 
@@ -118,7 +112,7 @@ public class MLP {
 
         // Calcul des gradients pour la couche de sortie
         ActivationMatrix a_L_minus_1 = (L-1 > 0) ? activations.get(L-2).getA() : input;
-        GradientMatrix dL_dW_L = delta_L.multiply(a_L_minus_1.transpose());
+        GradientMatrix dL_dW_L = delta_L.multiplyAtRight(a_L_minus_1.transpose());
 
         // TODO VERIFY SI CESET LA BONNE CHOSE !
         BiasVector dL_db_L = delta_L.sumErrorTerm();
@@ -132,30 +126,23 @@ public class MLP {
         for (int l = L-2; l >= 0; l--) {
 
             ActivationMatrix z_l = activations.get(l).getB(); // Activations Pre-AF
-            ActivationMatrix a_l_minus_1 = (l > 0) ? activations.get(l-1).getA() : input;
+            ActivationMatrix a_l_minus_1 = (l > 0) ? activations.get(l-1).getA() : input; // Activations Post-AF
 
             Layer layer_l_plus_1 = this.layers.get(l+1);
             Layer layer_l = this.layers.get(l);
 
-            WeightMatrix W_l_plus_1_T = layer_l_plus_1.getWeightMatrix().clone().transpose();
+            WeightMatrix W_l_plus_1_T = layer_l_plus_1.getWeightMatrix().transpose();
             ActivationMatrix sigma_prime_z_l = z_l.applyFunction(layer_l.getDerivativeOfAF());
             GradientMatrix delta_l = delta_l_plus_1
-                    .multiplyAtRight(W_l_plus_1_T)
+                    .multiply(W_l_plus_1_T)
                     .hadamardProduct(sigma_prime_z_l);
 
             // Finalement : calcul du gradient des poids et du biais
-            GradientMatrix dl_dW_l = delta_l.multiply(a_l_minus_1.transpose());
+            GradientMatrix dl_dW_l = delta_l.multiplyAtRight(a_l_minus_1.transpose());
             BiasVector dL_db_l = delta_l.sumErrorTerm();
 
             gradients.addFirst(new Pair<>(dl_dW_l, dL_db_l));
             delta_l_plus_1 = delta_l;
-
-            /**
-                System.out.println();
-                System.out.println();
-                System.out.println("Gradient de poids couche " + l);
-                dl_dW_l.print();**/
-
 
         }
 

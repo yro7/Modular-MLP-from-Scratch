@@ -13,8 +13,8 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
     /**
      * Constructeur créant une matrice d'activation de taille rows x cols remplie de zéros.
      *
-     * @param rows Nombre de lignes (correspond généralement au nombre de neurones)
-     * @param cols Nombre de colonnes (correspond généralement à la taille du batch)
+     * @param rows Nombre de lignes (correspond au nombre d'items dans le batch)
+     * @param cols Nombre de colonnes (correspond au nombre de neurones dans la couche)
      */
     public ActivationMatrix(int rows, int cols) {
         super(rows, cols);
@@ -23,7 +23,7 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
     /**
      * Constructeur à partir d'un tableau bidimensionnel.
      *
-     * @param data Tableau 2D de valeurs double représentant les activations
+     * @param data Tableau 2D de double représentant les activations
      */
     public ActivationMatrix(double[][] data) {
         super(data);
@@ -43,8 +43,8 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
     }
 
     /**
-     * Ajoute un vecteur de biais à chaque colonne de cette matrice d'activation.
-     * Cette opération est typiquement effectuée dans le calcul forward d'un réseau de neurones.
+     * Ajoute un vecteur de biais à chaque ligne de cette matrice d'activation.
+     * Cette opération est typiquement effectuée dans le calcul forward du réseau de neurones.
      *
      * @param biasVector Le vecteur de biais à ajouter
      * @return Cette matrice modifiée
@@ -53,29 +53,18 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
      * @intermédiaire Renvoie this pour permettre le chaînage
      */
     public ActivationMatrix addBiasVector(BiasVector biasVector) {
-        assert(this.getNumberOfRows() == biasVector.getNumberOfRows()) : "Vecteur d'entrée incorrect : "
-                + "Hauteur du vecteur bias : " + biasVector.getNumberOfRows()
-                + " Hauteur de la matrice : " + this.getNumberOfRows();
+        assert(this.getNumberOfColumns() == biasVector.getLength()) : "Vecteur d'entrée incorrect : "
+                + "Longueur du vecteur bias : " + biasVector.getLength()
+                + " Nombre de colonnes de la matrice : " + this.getNumberOfRows();
 
-        this.applyToElements((i, j) -> this.getData()[i][j] = this.getData()[i][j] + biasVector.getData()[i][0]);
+        double[][] data = this.getData();
+        for(int i = 0; i < this.getNumberOfRows(); i++){
+            for(int j = 0; j < this.getNumberOfColumns(); j++){
+                double[] dataRow = data[i];
+                dataRow[j] += biasVector.getData()[0][j];
+            }
+        }
         return this;
-    }
-
-    /**
-     * Calcule le produit matriciel entre une matrice de poids et cette matrice d'activation.
-     * Cette opération est typiquement effectuée dans le calcul forward d'un réseau de neurones.
-     *
-     * Si A est cette matrice d'activation et W est la matrice de poids,
-     * calcule le produit W×A.
-     *
-     * @param weightMatrix La matrice de poids à multiplier à gauche
-     * @return Une nouvelle matrice d'activation résultant du produit
-     * @throws AssertionError si les dimensions sont incompatibles
-     * @immutable Ne modifie pas la matrice d'activation actuelle
-     * @intermédiaire Renvoie une nouvelle matrice pour permettre le chaînage
-     */
-    public ActivationMatrix multiplyAtRightByWeightMatrix(WeightMatrix weightMatrix) {
-        return this.multiplyAtRight(weightMatrix);
     }
 
     /**
@@ -95,5 +84,22 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
      */
     public int getBatchSize(){
         return this.getNumberOfColumns();
+    }
+
+    /**
+     * Calcule le produit matriciel entre cette matrice d'activation et une matrice de poids.
+     * Cette opération est typiquement effectuée dans le calcul forward d'un réseau de neurones.
+     *
+     * Si A est cette matrice d'activation et W est la matrice de poids,
+     * calcule le produit A x W.
+     *
+     * @param weightMatrix La matrice de poids à multiplier à droite
+     * @return Une nouvelle matrice d'activation résultant du produit
+     * @throws AssertionError si les dimensions sont incompatibles
+     * @immutable Ne modifie pas la matrice d'activation actuelle
+     * @intermédiaire Renvoie une nouvelle matrice pour permettre le chaînage
+     */
+    public ActivationMatrix multiplyByWeightMatrix(WeightMatrix weightMatrix) {
+        return this.multiply(weightMatrix);
     }
 }

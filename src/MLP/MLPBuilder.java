@@ -26,8 +26,7 @@ public class MLPBuilder {
     }
 
     public MLP build(){
-
-        assert (!this.layers.isEmpty()) : "Le MLP doit avoir au moins une couche.";
+        assert (this.layers.size() > 1) : "Le MLP doit avoir au moins une couche cachée.";
         return new MLP(this.layers, dimInput);
     }
 
@@ -43,8 +42,9 @@ public class MLPBuilder {
     }
 
 
+
     public MLPBuilder addLayer(int numberOfNeuronsOfNewLayer, ActivationFunction af){
-        Layer newLayer = new Layer(numberOfNeuronsOfNewLayer, previousLayerSize, af);
+        Layer newLayer = new Layer(previousLayerSize, numberOfNeuronsOfNewLayer, af);
         this.layers.add(newLayer);
         this.previousLayerSize = numberOfNeuronsOfNewLayer;
         return this;
