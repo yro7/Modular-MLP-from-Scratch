@@ -36,6 +36,9 @@ public class MatrixTest {
     @Test
     public void testClone() {
         Matrix<?> clone = matrixA.clone();
+        matrixA.print();
+        clone.print();
+
         assertNotSame(matrixA, clone);
         assertArrayEquals(matrixA.getData(), clone.getData());
     }
@@ -142,6 +145,8 @@ public class MatrixTest {
         Matrix<?> matrixE = new ConcreteMatrix(dataE);
         Matrix<?> result = matrixE.log();
 
+        matrixE.print();
+        result.print();
         assertEquals(0.0, result.getData()[0][0], 1e-9);
         assertEquals(1.0, result.getData()[0][1], 1e-9);
         assertEquals(2.0, result.getData()[0][2], 1e-9);

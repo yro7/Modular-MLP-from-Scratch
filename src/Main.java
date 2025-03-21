@@ -9,6 +9,7 @@ import MLP.Pair;
 import javax.swing.text.Position;
 
 import static Function.ActivationFunction.*;
+import static Function.LossFunction.BCE;
 import static Function.LossFunction.MSE;
 
 // TODO ROADMAP :
@@ -22,6 +23,30 @@ import static Function.LossFunction.MSE;
 public class Main {
     public static void main(String[] args) {
 
+        MLP mlp = MLP.builder(2)
+                .setRandomSeed(69)
+                .addLayer(4, ReLU)
+                .addLayer(1, TanH)
+                .build();
+
+        double[][] xorData = {
+                {0, 0},
+                {0, 1},
+                {1, 0},
+                {1, 1}
+        };
+
+        double[][] xorResult = {
+                {0},
+                {1},
+                {1},
+                {0},
+        };
+
+        ActivationMatrix batchInput = new ActivationMatrix(xorData);
+        ActivationMatrix batchTheorique = new ActivationMatrix(xorResult);
+
+        loopBackpro(mlp, batchInput, batchTheorique, 10_000);
 
     }
 
@@ -52,37 +77,6 @@ public class Main {
 
     public static void save(){
 
-        MLP mlp = MLP.builder(42)
-                .setRandomSeed(420)
-                .addLayer(32, ReLU)
-                .addLayer(32, ReLU)
-                .addLayer(16, ReLU)
-                .addLayer(16, ReLU)
-                .addLayer(8, ReLU)
-                .addLayer(8, ReLU)
-                .build();
-
-        ActivationMatrix batchInput = new ActivationMatrix(creerTableau(42,1));
-        ActivationMatrix batchTheorique = new ActivationMatrix(creerTableau(8,1));
-
-        ActivationMatrix batchTheoriqueClone = batchTheorique.clone();
-        ActivationMatrix batchInputClone = batchInput.clone();
-
-        printLoss(mlp, batchInput, batchTheorique);
-
-        mlp.getLayer(0).getWeightMatrix().print();
-
-        for(int i = 0; i < 300_000; i++){
-            //     mlp.getLayer(4).getBiasVector().print();
-            mlp.updateParameters(batchInput, batchTheorique, MSE);
-        }
-
-        mlp.getLayer(0).getWeightMatrix().print();
-
-        printLoss(mlp, batchInput, batchTheorique);
-
-        assert(batchTheorique.equals(batchTheoriqueClone));
-        assert(batchInputClone.equals(batchInput));
 
     }
 

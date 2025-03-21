@@ -37,7 +37,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @param data Tableau 2D de valeurs double
      */
     public Matrix(double[][] data) {
-        this.data = data.clone();
+        this.data = double2DArrayDeepCopy(data);
     }
 
     /**
@@ -46,8 +46,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @param source La matrice à copier
      */
     public Matrix(Matrix<?> source){
-        this(source.getNumberOfRows(), source.getNumberOfColumns());
-        this.data = source.data.clone();
+        this(source.getData());
     }
 
     /**
@@ -79,6 +78,7 @@ public abstract class Matrix<T extends Matrix<T>> {
     public double[][] getData() {
         return data;
     }
+
 
     /**
      * Récupère le nombre de colonnes de la matrice.
@@ -128,9 +128,12 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @mutable Cette méthode modifie la matrice actuelle
      * @intermédiaire Ne renvoie pas d'objet, mais permet d'enchaîner des opérations
      */
-    public void applyToElements(ElementOperation operation){
-        for(int i = 0; i < this.getNumberOfRows(); i++){
-            for(int j = 0; j < this.getNumberOfColumns(); j++){
+    public void applyToElements(ElementOperation operation) {
+        double[][] data = this.getData();
+        int rows = data.length;
+        int cols = data[0].length;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 operation.apply(i, j);
             }
         }
@@ -145,12 +148,20 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @intermédiaire Renvoie this pour permettre le chaînage
      */
     public T forEach(Consumer<? super Double> action){
-        applyToElements((i,j) -> action.accept(data[i][j]));
+        double[][] data = this.getData();
+        int rows = data.length;
+        int cols = data[0].length;
+        for (int i = 0; i < rows; i++) {
+            double[] dataRow = data[i];
+            for (int j = 0; j < cols; j++) {
+                action.accept(dataRow[j]);
+            }
+        }
         return self();
     }
 
     /**
-     * Crée une copie profonde de la matrice.
+     * Crée une copie PROFONDE de la matrice.
      *
      * @return Une nouvelle matrice avec les mêmes valeurs
      * @immutable Ne modifie pas la matrice actuelle
@@ -158,7 +169,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public T clone(){
         T res = this.createInstance(this.getNumberOfRows(), this.getNumberOfColumns());
-        applyToElements((i,j) -> res.getData()[i][j] = this.getData()[i][j]);
+        res.data = double2DArrayDeepCopy(this.getData());
         return res;
     }
 
@@ -209,7 +220,9 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @intermédiaire Renvoie this pour permettre le chaînage
      */
     public T applyFunction(Function<Double,Double> function) {
-        this.applyToElements((i,j) -> this.data[i][j] = function.apply(this.data[i][j]));
+        this.forEach(function::apply);
+        this.applyToElements((i,j) ->
+                this.getData()[i][j] = function.apply(this.getData()[i][j]));
         return self();
     }
 
@@ -313,7 +326,7 @@ public abstract class Matrix<T extends Matrix<T>> {
         return res;
     }
 
-
+ // TODO FIX LA FONCTION HAAAAAAAAAAAAAAAAA
     /**
      * Calcule la somme des éléments de chaque colonne.
      * Si la matrice est de taille n x p, renvoie un vecteur p x 1.
@@ -323,9 +336,9 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @terminale Renvoie une valeur finale et termine la chaîne d'opérations
      */
     public double[][] sumOverColumns(){
-        double[][] res = new double[this.getNumberOfColumns()][1];
+        double[][] res = new double[1][this.getNumberOfColumns()];
         applyToElements((i, j) -> {
-            res[i][0] += this.getData()[i][j];
+            res[0][j] += this.getData()[i][j];
         });
 
         return res;
@@ -364,6 +377,19 @@ public abstract class Matrix<T extends Matrix<T>> {
     }
 
     /**
+     * Ajoute un scalaire à chaque élément de la matrice.
+     * @param scalar le scalaire à additionner
+     * @return La matrice modifiée
+     * @throws AssertionError si les dimensions ne correspondent pas
+     * @mutable Cette méthode modifie la matrice actuelle
+     * @intermédiaire Renvoie this pour permettre le chaînage
+     */
+    public T add(double scalar){
+        this.applyToElements((i,j) -> this.getData()[i][j] += scalar);
+        return self();
+    }
+
+    /**
      * Calcule le produit de Hadamard (multiplication élément par élément) avec une autre matrice.
      *
      * @param matrix La matrice à multiplier élément par élément
@@ -375,6 +401,20 @@ public abstract class Matrix<T extends Matrix<T>> {
     public T hadamardProduct(Matrix<?> matrix){
         verifyDimensions(matrix);
         return elementWiseOperation((d1, d2) -> d1 * d2, matrix);
+    }
+
+    /**
+     * Calcule le quotient de Hadamard (division élément par élément) avec une autre matrice.
+     *
+     * @param matrix La matrice à diviser chaque élément par l'élément de la matrice argument
+     * @return La matrice modifiée
+     * @throws AssertionError si les dimensions ne correspondent pas
+     * @mutable Cette méthode modifie la matrice actuelle
+     * @intermédiaire Renvoie this pour permettre le chaînage
+     */
+    public T hadamardQuotient(Matrix<?> matrix){
+        verifyDimensions(matrix);
+        return elementWiseOperation((d1, d2) -> d1 / d2, matrix);
     }
 
     /**
@@ -560,10 +600,26 @@ public abstract class Matrix<T extends Matrix<T>> {
 
     /**
      * Affiche la norme de la matrice.
-     * @mutable Modifie la matrice actuelle
+     * @immutable Ne modifie pas la matrice actuelle
      * @terminale Renvoie une valeur finale et termine la chaîne d'opérations
      */
     public void printNorm() {
         System.out.println("Norme : " + this.clone().norm());
+    }
+
+    /**
+     * Effectue une copie profonde d'un tableau 2D de doubles.
+     * @param array
+     * @return
+     */
+    public static double[][] double2DArrayDeepCopy(double[][] array){
+        double[][] cloneData = new double[array.length][array[0].length];
+        // Copie profonde de chaque tableau de la matrice
+        for(int i = 0; i < array.length; i++){
+            System.arraycopy(array[i], 0,
+                    cloneData[i], 0, array[i].length);
+
+        }
+        return cloneData;
     }
 }
