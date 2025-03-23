@@ -1,47 +1,60 @@
 package Function;
 
+import Matrices.ActivationMatrix;
+
 import java.util.Random;
 import java.util.function.Function;
 
 import static Function.InitializationFunction.*;
 
-public enum ActivationFunction implements Function<Double,Double> {
+public enum ActivationFunction implements Function<ActivationMatrix,ActivationMatrix> {
 
 
-    ReLU(He, a -> Math.max(0, a),
-            d -> d > 0.0 ? 1.0 : 0.0
+    ReLU(He, activationMatrix -> activationMatrix.applyFunction(d -> Math.max(0, d)),
+            activationMatrix -> activationMatrix.applyFunction(d -> d > 0.0 ? 1.0 : 0.0)
     ),
 
-    TanH(Xavier, Math::tanh,
-            d -> 1 - Math.pow(Math.tanh(d), 2)
+    TanH(Xavier, activationMatrix -> activationMatrix.applyFunction(Math::tanh),
+            activationMatrix -> activationMatrix.applyFunction(d -> 1 - Math.pow(Math.tanh(d), 2))
     ),
 
-    Sigmoid(LeCun,
-            d -> sigma(d),
-            d -> sigma(d)*(1-sigma(d))
+    Sigmoid(LeCun, activationmatrix -> activationmatrix.applyFunction(d -> sigma(d)),
+            activationMatrix -> activationMatrix.applyFunction(d -> sigma(d)*(1-sigma(d)))
     ),
 
 
-    Identity(Xavier, d -> d, d -> 1.0);
+    Identity(Xavier, activationMatrix -> activationMatrix,
+            activationmatrix -> activationmatrix.applyFunction(d -> 1.0)),
 
-     // TODO SOFTMAX IMPLEMENTATION : change implements double double to implements matrix double.
 
-    public static Random randomGenerator = new Random();
+    SoftMax(Xavier,
+            activationMatrix -> {
+                activationMatrix.applyFunction(Math::exp);
+                double[] sumOverRows = activationMatrix.sumOverRows();
+                activationMatrix.applyToElements((i, j) -> {
+                    activationMatrix.getData()[i][j] /= sumOverRows[i];
+                });
+                return activationMatrix;
+            },
 
+            activationMatrix -> activationMatrix.applyFunction(d -> d*(1-d))
+
+    );
 
     public final InitializationFunction initializationFunction;
-    public final Function<Double, Double> function;
-    public final Function<Double,Double> derivativeFunction;
+    public final Function<ActivationMatrix, ActivationMatrix> function;
+    public final Function<ActivationMatrix,ActivationMatrix> derivativeFunction;
 
 
-    ActivationFunction(InitializationFunction initializationFunction, Function<Double, Double> function, Function<Double, Double> derivativeFunction) {
+    ActivationFunction(InitializationFunction initializationFunction, Function<ActivationMatrix, ActivationMatrix> function,
+                        Function<ActivationMatrix, ActivationMatrix> derivativeFunction) {
         this.initializationFunction = initializationFunction;
         this.function = function;
         this.derivativeFunction = derivativeFunction;
     }
 
     @Override
-    public Double apply(Double value) {
+    public ActivationMatrix apply(ActivationMatrix value) {
         return function.apply(value);
     }
 
@@ -53,7 +66,7 @@ public enum ActivationFunction implements Function<Double,Double> {
         return this.getInitializationFunction().getRandomBias.apply(n,p);
     }
 
-    public Function<Double, Double> getDerivative() {
+    public Function<ActivationMatrix, ActivationMatrix> getDerivative() {
         return this.derivativeFunction;
     }
 
@@ -67,4 +80,3 @@ public enum ActivationFunction implements Function<Double,Double> {
         return 1/(1+Math.exp(-z));
     }
 }
-

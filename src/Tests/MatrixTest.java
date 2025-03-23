@@ -168,11 +168,11 @@ public class MatrixTest {
     @Test
     public void testSumOverRows() {
         // Effectuer la somme des lignes de la matrice
-        double[][] result = matrixA.sumOverRows();
+        double[] result = matrixA.sumOverRows();
 
         // Vérifier les résultats de la somme pour chaque ligne
-        assertEquals(6.0, result[0][0], 1e-9); // 1 + 2 + 3 = 6
-        assertEquals(15.0, result[1][0], 1e-9); // 4 + 5 + 6 = 15
+        assertEquals(6.0, result[0], 1e-9); // 1 + 2 + 3 = 6
+        assertEquals(15.0, result[1], 1e-9); // 4 + 5 + 6 = 15
     }
 
 

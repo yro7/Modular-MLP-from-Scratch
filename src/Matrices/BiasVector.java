@@ -14,10 +14,9 @@ public class BiasVector extends Matrix<BiasVector> {
         super(1, length);
     }
 
-    public BiasVector(double[][] data){
-        assert(data.length == 1) : "Un Vecteur de Biais devrait être de hauteur 1 ! Taille rentrée: "
-                + data.length + " x " + data[0].length + ".";
-        super(data);
+    public BiasVector(double[] data){
+        this(data.length);
+        this.getData()[0] = data;
     }
 
     /**
@@ -30,6 +29,10 @@ public class BiasVector extends Matrix<BiasVector> {
     public BiasVector(int length, int numberOfNeuronsInPreviousLayer, ActivationFunction af){
         this(length);
         this.applyToElements((i,j) -> this.getData()[i][j] = af.applyRandomBias(length,numberOfNeuronsInPreviousLayer));
+    }
+
+    public BiasVector(double[][] data) {
+        super(data);
     }
 
     public static BiasVector createZeroBiasVector(int dimension) {

@@ -8,62 +8,59 @@ import Matrices.ActivationMatrix;
 import java.io.IOException;
 import java.util.List;
 
-import static Function.ActivationFunction.ReLU;
-import static Function.ActivationFunction.Sigmoid;
-import static Function.LossFunction.MSE;
+import static Function.ActivationFunction.*;
+import static Function.LossFunction.*;
 
 public class Instancier {
 
     public static void main(String[] args) throws IOException {
+        // Chemins vers les fichiers MNIST
+        String imagesPath = "src/MLP/MNIST/data/t10k-images.idx3-ubyte";
+        String labelsPath = "src/MLP/MNIST/data/t10k-labels.idx1-ubyte";
 
-        // Contient 10k MnistMatrix
-        MnistVector[] mnistVectors = MnistDataReader.readData("src/MLP/MNIST/data/t10k-images.idx3-ubyte",
-                "src/MLP/MNIST/data/t10k-labels.idx1-ubyte");
+        // Contient 10k MnistVector
+        MnistVector[] mnistVectors = MnistDataReader.readData(imagesPath, labelsPath);
 
-        final int batchSize = 3000;
+        int batchSize = 3000;
+
         MnistTrainData data = new MnistTrainData(mnistVectors, batchSize);
 
-        data.printDimensions("test");
-
-        System.out.println(mnistVectors.length + "caca");
-
-
+        // Construction du MLP
         MLP mnistMLP = MLP.builder(784)
                 .setRandomSeed(2)
                 .addLayer(256, ReLU)
                 .addLayer(128, ReLU)
-                .addLayer(10, Sigmoid)
+                .addLayer(10, SoftMax)
                 .build();
 
-        //List<Pair<ActivationMatrix, ActivationMatrix>> res = mnistMLP.feedForward(data);
+        ActivationMatrix batchTheorique = new ActivationMatrix(batchSize, 10);
 
-        ActivationMatrix batchTheorique = new ActivationMatrix(10, batchSize);
-
-        // matrice d'activation, vecturs en hauteur de taille 10
-        // et 3000 vecteurs comme ça, donc 10k colonnes
-
+        // Construction de la matrice des sorties attendues
         for(int i = 0; i < batchSize; i++){
             MnistVector vectorI = mnistVectors[i];
             int label = vectorI.getLabel();
 
             for(int k = 0; k < 10; k++){
-                batchTheorique.getData()[k][i] = (k == label) ? 1 : 0;
+                batchTheorique.getData()[i][k] = (k == label) ? 1 : 0;
             }
         }
 
+        // Calcul de la loss initiale
         printLoss(mnistMLP, data, batchTheorique);
 
-        for(int i = 0; i < 20; i++){
-            mnistMLP.updateParameters(data, batchTheorique, MSE);
-            System.out.println("Etape d'entraînement " + i + " finie!");
-            printLoss(mnistMLP, data, batchTheorique);
+         for(int i = 0; i < 10; i++){
+         mnistMLP.updateParameters(data, batchTheorique, CE);
+         System.out.println("Etape d'entraînement " + i + " finie!");
+         printLoss(mnistMLP, data, batchTheorique);
+         }
 
+        for(int i = 0; i < 5; i++){
+            MnistVector vector = mnistVectors[i];
+            List<Pair<ActivationMatrix, ActivationMatrix>> res = mnistMLP.feedForward(vector);
+            int pred = maxIndiceOfArray(res.getLast().getA().getData()[0]);
+            System.out.println("Prédiction : " + pred + "   |   Valeur réelle : " + vector.getLabel());
 
         }
-
-        printLoss(mnistMLP, data, batchTheorique);
-
-       // res.getLast().getA().printDimensions("c");
 
     }
 
@@ -78,6 +75,19 @@ public class Instancier {
     }
 
     public static void printLoss(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique){
-        System.out.println("Loss : " + mlp.computeLoss(batchInput, batchTheorique, MSE));
+        System.out.println("Loss : " + mlp.computeLoss(batchInput, batchTheorique, CE));
+    }
+
+    public static int maxIndiceOfArray(double[] array){
+        int res = 0;
+        double max = array[0];
+        for(int i = 0; i < array.length; i ++){
+            if(max < array[i]) {
+                res = i;
+                max = array[i];
+            }
+        }
+
+        return res;
     }
 }

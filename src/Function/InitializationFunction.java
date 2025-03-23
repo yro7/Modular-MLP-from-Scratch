@@ -1,16 +1,16 @@
 package Function;
-
-import java.util.Random;
 import java.util.function.BiFunction;
 
-import static Function.ActivationFunction.randomGenerator;
+import static MLP.MLPBuilder.randomGenerator;
 
 /**
  * En fonction de quelle {@link ActivationFunction} on choisit, il est utile d'initialiser les
  * poids et biais du réseau en fonction de certaines distributions aléatoires.
  * Les {@link InitializationFunction} permettent d'optimiser l'initialisation.
  */
+
 public enum InitializationFunction {
+
 
 
     /**
@@ -23,7 +23,7 @@ public enum InitializationFunction {
     ),
 
     /**
-     * Voir <a href="http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf">249Understanding the difficulty of training deep feedforward neural networks</a>.
+     * Voir <a href="http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf">Understanding the difficulty of training deep feedforward neural networks</a>.
      */
     Xavier(
             (inputSize, layerSize) -> randomGenerator.nextGaussian() * Math.sqrt(1.0 / (inputSize+layerSize)),
@@ -34,6 +34,7 @@ public enum InitializationFunction {
             (inputSize, layerSize) -> randomGenerator.nextGaussian() * Math.sqrt(1.0 / inputSize),
             (inputSize, layerSize) -> 0.01
     );
+
 
 
     public final BiFunction<Integer,Integer,Double> getRandomWeight;

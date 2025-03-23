@@ -40,9 +40,9 @@ public class MLP {
             // Calcul de    AxW + B
             ActivationMatrix activationsBeforeAF = layer.multiplyByWeightsAndAddBias(activationMatrixOfLayer);
             // Calcul de  f(AxW + B)
-            activationMatrixOfLayer = activationsBeforeAF
-                    .clone() // Nécessaire pour éviter de modifier activationsBeforeAF
-                    .applyFunction(layer.getActivationFunction());
+            activationMatrixOfLayer = layer.getActivationFunction()
+                    .apply(activationsBeforeAF.clone()); // Clone nécessaire pour éviter de modifier
+                                                         // activationsBeforeAF
 
             result.add(new Pair<>(activationMatrixOfLayer, activationsBeforeAF));
         }
@@ -106,7 +106,7 @@ public class MLP {
         // Calcul de dL/da_L [sortie attendue]
         GradientMatrix dL_da_L = lossFunction.applyDerivative(a_L, expectedOutput);
         // Calcul de σ'(z_L)
-        ActivationMatrix sigma_prime_z_L = z_L.applyFunction(getLastLayer().getDerivativeOfAF());
+        ActivationMatrix sigma_prime_z_L = getLastLayer().getDerivativeOfAF().apply(z_L);
         //  dL/da_L ⊙ σ'(z_L)
         GradientMatrix delta_L = dL_da_L.hadamardProduct(sigma_prime_z_L);
 
@@ -132,7 +132,7 @@ public class MLP {
             Layer layer_l = this.layers.get(l);
 
             WeightMatrix W_l_plus_1_T = layer_l_plus_1.getWeightMatrix().transpose();
-            ActivationMatrix sigma_prime_z_l = z_l.applyFunction(layer_l.getDerivativeOfAF());
+            ActivationMatrix sigma_prime_z_l = layer_l.getDerivativeOfAF().apply(z_l);
             GradientMatrix delta_l = delta_l_plus_1
                     .multiply(W_l_plus_1_T)
                     .hadamardProduct(sigma_prime_z_l);
@@ -175,7 +175,7 @@ public class MLP {
         // Calcul de dL/da_L [sortie attendue]
         GradientMatrix dL_da_L = lossFunction.applyDerivative(a_L, expectedOutput);
         // Calcul de σ'(z_L)
-        ActivationMatrix sigma_prime_z_L = z_L.applyFunction(getLastLayer().getDerivativeOfAF());
+        ActivationMatrix sigma_prime_z_L = getLastLayer().getDerivativeOfAF().apply(z_L);
         //  dL/da_L ⊙ σ'(z_L)
         GradientMatrix delta_L = dL_da_L.hadamardProduct(sigma_prime_z_L);
 
@@ -205,7 +205,7 @@ public class MLP {
             Layer layer_l = this.layers.get(l);
 
             WeightMatrix W_l_plus_1_T = layer_l_plus_1.getWeightMatrix().clone().transpose();
-            ActivationMatrix sigma_prime_z_l = z_l.applyFunction(layer_l.getDerivativeOfAF());
+            ActivationMatrix sigma_prime_z_l = layer_l.getDerivativeOfAF().apply(z_l);
             GradientMatrix delta_l = delta_l_plus_1
                     .multiplyAtRight(W_l_plus_1_T)
                     .hadamardProduct(sigma_prime_z_l);
