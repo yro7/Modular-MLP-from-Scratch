@@ -317,10 +317,10 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @immutable Ne modifie pas la matrice actuelle
      * @terminale Renvoie une valeur finale et termine la chaîne d'opérations
      */
-    public double[][] sumOverRows(){
-        double[][] res = new double[this.getNumberOfRows()][1];
+    public double[] sumOverRows(){
+        double[] res = new double[this.getNumberOfRows()];
         applyToElements((i, j) -> {
-            res[i][0] += this.getData()[i][j];
+            res[i] += this.getData()[i][j];
         });
 
         return res;
@@ -335,10 +335,10 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @immutable Ne modifie pas la matrice actuelle
      * @terminale Renvoie une valeur finale et termine la chaîne d'opérations
      */
-    public double[][] sumOverColumns(){
-        double[][] res = new double[1][this.getNumberOfColumns()];
+    public double[] sumOverColumns(){
+        double[] res = new double[this.getNumberOfColumns()];
         applyToElements((i, j) -> {
-            res[0][j] += this.getData()[i][j];
+            res[j] += this.getData()[i][j];
         });
 
         return res;
@@ -396,6 +396,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @return La matrice modifiée
      * @throws AssertionError si les dimensions ne correspondent pas
      * @mutable Cette méthode modifie la matrice actuelle
+     * @immutable_argument Cette méthode ne modifie pas la matrice passée en argument.
      * @intermédiaire Renvoie this pour permettre le chaînage
      */
     public T hadamardProduct(Matrix<?> matrix){
@@ -410,11 +411,28 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @return La matrice modifiée
      * @throws AssertionError si les dimensions ne correspondent pas
      * @mutable Cette méthode modifie la matrice actuelle
+     * @immutable_argument Cette méthode ne modifie pas la matrice passée en arugment.
      * @intermédiaire Renvoie this pour permettre le chaînage
      */
     public T hadamardQuotient(Matrix<?> matrix){
         verifyDimensions(matrix);
         return elementWiseOperation((d1, d2) -> d1 / d2, matrix);
+    }
+
+    /**
+     * Calcule le quotient de Hadamard (division élément par élément) avec une autre matrice.
+     *
+     * @param matrix La matrice dont les composantes sont la division des composantes de la
+     *              matrice argument par la matrice actuelle.
+     * @return La matrice modifiée
+     * @throws AssertionError si les dimensions ne correspondent pas
+     * @mutable Cette méthode modifie la matrice actuelle
+     * @immutable_argument Cette méthode ne modifie pas la matrice passée en arugment.
+     * @intermédiaire Renvoie this pour permettre le chaînage
+     */
+    public T hadamardQuotientAtRight(Matrix<?> matrix){
+        verifyDimensions(matrix);
+        return elementWiseOperation((d1, d2) -> d2 / d1, matrix);
     }
 
     /**
@@ -462,7 +480,11 @@ public abstract class Matrix<T extends Matrix<T>> {
      * @intermédiaire Renvoie this pour permettre le chaînage
      */
     public T log(){
-        return this.applyFunction(Math::log);
+        return this.applyFunction(d -> {
+            if(d == 0) return Math.log(d+1e-9);
+            if(d == 1) return Math.log(d-1e-9);
+            return Math.log(d);
+        });
     }
 
     /**
@@ -621,5 +643,19 @@ public abstract class Matrix<T extends Matrix<T>> {
 
         }
         return cloneData;
+    }
+
+    /**
+     * Calcule la trace de la matrice, c'est à dire la somme des éléments diagonaux.
+     * @immutable Ne modifie pas la matrice actuelle
+     * @terminale Renvoie une valeur finale et termine la chaîne d'opérations
+     */
+    public double trace(){
+        assert(this.getNumberOfColumns() == this.getNumberOfRows()) : "La matrice doit être carrée.";
+        double[] res = new double[]{0.0};
+        this.applyToElements((i,j) -> {
+            if(i == j) res[0] += this.getData()[i][j];
+        });
+        return res[0];
     }
 }

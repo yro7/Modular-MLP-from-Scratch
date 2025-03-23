@@ -9,14 +9,10 @@ import MLP.Pair;
 import javax.swing.text.Position;
 
 import static Function.ActivationFunction.*;
-import static Function.LossFunction.BCE;
-import static Function.LossFunction.MSE;
+import static Function.LossFunction.*;
 
 // TODO ROADMAP :
 /**
- * Transposer les matrices d'activation pour que chaque "item" soit une rangée au lieu d'une colonne
- * java utilise le row major order donc pour des copies d'arrays ce serait plus opti
- *
  * Implémenter les Trainers, Optimizers, Data(TrainingData & TestData)
  *
  */
@@ -26,7 +22,7 @@ public class Main {
         MLP mlp = MLP.builder(2)
                 .setRandomSeed(69)
                 .addLayer(4, ReLU)
-                .addLayer(1, TanH)
+                .addLayer(1, ReLU)
                 .build();
 
         double[][] xorData = {
@@ -48,6 +44,10 @@ public class Main {
 
         loopBackpro(mlp, batchInput, batchTheorique, 10_000);
 
+        List<Pair<ActivationMatrix,ActivationMatrix>> res = mlp.feedForward(batchInput);
+
+        res.getLast().getA().print();
+
     }
 
     public static double[][] creerTableau(int n, int p){
@@ -64,14 +64,14 @@ public class Main {
     public static void loopBackpro(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique, int n){
         printLoss(mlp, batchInput, batchTheorique);
         IntStream.range(1,n).forEach(i -> {
-            mlp.updateParameters(batchInput, batchTheorique, MSE);
+            mlp.updateParameters(batchInput, batchTheorique, CE);
     });
         printLoss(mlp, batchInput, batchTheorique);
 
     }
 
     public static void printLoss(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique){
-        System.out.println("Loss : " + mlp.computeLoss(batchInput, batchTheorique, MSE));
+        System.out.println("Loss : " + mlp.computeLoss(batchInput, batchTheorique, CE));
     }
 
 

@@ -32,6 +32,8 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
      */
     final LossFunction BCE = new BCE();
 
+    final LossFunction CE = new CE();
+
 
     final class MSE implements LossFunction {
 
@@ -81,26 +83,42 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
         }
     }
 
-    // TODO opti à fond
     final class BCE implements LossFunction {
 
         @Override
         public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            ActivationMatrix y_pred2 = y_pred.clone().add(1.0).multiply(-1.0);
-            ActivationMatrix y_true2 = y_true.clone().add(1.0).multiply(-1.0);
-            return y_true.hadamardQuotient(y_pred)
-                    .substract(y_true2.hadamardQuotient(y_pred2))
+            ActivationMatrix y_pred2 = y_pred.clone().multiply(-1.0).add(1.0);
+            ActivationMatrix y_true2 = y_true.clone().multiply(-1.0).add(1.0);
+            return y_pred.hadamardQuotientAtRight(y_true)
+                    .add(y_pred2.hadamardQuotientAtRight(y_true2))
                     .divide(-1*(y_pred.size()))
                     .toGradientMatrix();
         }
 
         @Override
         public Double apply(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            ActivationMatrix y_pred2 = y_pred.clone().add(1.0).multiply(-1.0);
-            ActivationMatrix y_true2 = y_true.clone().add(1.0).multiply(-1.0);
 
-            return y_true.hadamardProduct(y_pred.log())
-                    .add(y_true2.hadamardProduct(y_pred2.log())).sum() / -1.0*(y_pred.size());
+            ActivationMatrix y_pred2 = y_pred.clone().multiply(-1.0).add(1.0);
+            ActivationMatrix y_true2 = y_true.clone().multiply(-1.0).add(1.0);
+
+            return y_pred.log().hadamardProduct(y_true)
+                    .add(y_pred2.log().hadamardProduct(y_true2)).sum() / -1.0*(y_pred.size());
+        }
+    }
+
+    final class CE implements LossFunction {
+
+        @Override
+        public Double apply(ActivationMatrix y_pred, ActivationMatrix y_true) {
+            return y_pred.log().hadamardProduct(y_true)
+                    .sum() / (-1 * y_pred.getBatchSize());
+        }
+
+        @Override
+        public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true) {
+            return y_pred.hadamardQuotientAtRight(y_true)
+                    .divide(-1 * y_true.getBatchSize())
+                    .toGradientMatrix();
         }
     }
 

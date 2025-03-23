@@ -12,15 +12,15 @@ public class MnistVector extends ActivationMatrix {
     private int label;
 
     public MnistVector() {
-        super(784, 1); // Crée une matrice 784x1 (vecteur)
+        super(1, 784); // Crée une matrice 784x1 (vecteur en ligne)
     }
 
     public double getValue(int idx) {
-        return this.getData()[idx][0];
+        return this.getData()[0][idx];
     }
 
     public void setValue(int idx, double value) {
-        this.getData()[idx][0] = value;
+        this.getData()[0][idx] = value;
     }
 
     public int getLabel() {
@@ -29,5 +29,9 @@ public class MnistVector extends ActivationMatrix {
 
     public void setLabel(int label) {
         this.label = label;
+    }
+
+    public void setValues(double[] rowVector) {
+        this.getData()[0] = rowVector;
     }
 }

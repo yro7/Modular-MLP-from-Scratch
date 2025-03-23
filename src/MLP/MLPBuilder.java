@@ -15,6 +15,8 @@ import java.util.stream.IntStream;
 
 public class MLPBuilder {
 
+    public static Random randomGenerator = new Random();
+
     private final List<Layer> layers = new ArrayList<>();
     private final int dimInput;
     private int previousLayerSize;
@@ -37,7 +39,7 @@ public class MLPBuilder {
      * @return
      */
     public MLPBuilder setRandomSeed(long seed){
-        ActivationFunction.randomGenerator = new Random(seed);
+        MLPBuilder.randomGenerator = new Random(seed);
         return this;
     }
 

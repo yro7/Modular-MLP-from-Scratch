@@ -34,7 +34,7 @@ public class GradientMatrix extends Matrix<GradientMatrix> {
      * @immutable Ne modifie pas la matrice actuelle, en renvoie une nouvelle.
      */
     public BiasVector sumErrorTerm() {
-        double[][] biasVectorData = this.sumOverColumns();
+        double[] biasVectorData = this.sumOverColumns();
         return new BiasVector(biasVectorData);
     }
 

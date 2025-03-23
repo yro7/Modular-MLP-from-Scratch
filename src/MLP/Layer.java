@@ -85,11 +85,12 @@ public class Layer {
      * Renvoie la dérivée de la fonction d'activation de la couche.
      * @return
      */
-    public Function<Double,Double> getDerivativeOfAF(){
+    public Function<ActivationMatrix,ActivationMatrix> getDerivativeOfAF(){
         return this.getActivationFunction().getDerivative();
     }
 
     public BiasVector getBiasVector(){
         return this.biasVector;
     }
+
 }
