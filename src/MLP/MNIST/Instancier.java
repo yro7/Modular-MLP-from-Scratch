@@ -21,9 +21,10 @@ public class Instancier {
         // Contient 10k MnistVector
         MnistVector[] mnistVectors = MnistDataReader.readData(imagesPath, labelsPath);
 
-        int batchSize = 3000;
+        int batchSize = 2000;
 
         MnistTrainData data = new MnistTrainData(mnistVectors, batchSize);
+
 
         // Construction du MLP
         MLP mnistMLP = MLP.builder(784)
@@ -34,7 +35,7 @@ public class Instancier {
                 .build();
 
         ActivationMatrix batchTheorique = new ActivationMatrix(batchSize, 10);
-
+        List<Pair<ActivationMatrix, ActivationMatrix>> res;
         // Construction de la matrice des sorties attendues
         for(int i = 0; i < batchSize; i++){
             MnistVector vectorI = mnistVectors[i];
@@ -48,15 +49,19 @@ public class Instancier {
         // Calcul de la loss initiale
         printLoss(mnistMLP, data, batchTheorique);
 
-         for(int i = 0; i < 10; i++){
+         for(int i = 0; i < 20; i++){
          mnistMLP.updateParameters(data, batchTheorique, CE);
          System.out.println("Etape d'entraînement " + i + " finie!");
          printLoss(mnistMLP, data, batchTheorique);
          }
 
-        for(int i = 0; i < 5; i++){
+        /**
+         * Pour du soft max + ce on s'attend à avoir un loss initial de ln(10)
+         * et un loss final de ~0.1
+         */
+        for(int i = 0; i < 50; i++){
             MnistVector vector = mnistVectors[i];
-            List<Pair<ActivationMatrix, ActivationMatrix>> res = mnistMLP.feedForward(vector);
+            res = mnistMLP.feedForward(vector);
             int pred = maxIndiceOfArray(res.getLast().getA().getData()[0]);
             System.out.println("Prédiction : " + pred + "   |   Valeur réelle : " + vector.getLabel());
 

@@ -3,21 +3,19 @@ package Tests;
 import Function.LossFunction;
 import Matrices.ActivationMatrix;
 import Matrices.GradientMatrix;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static Function.LossFunction.MAE;
 import static Function.LossFunction.MSE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LossFunctionTest {
 
-    private ActivationMatrix y_pred;
-    private ActivationMatrix y_true;
     private static final double DELTA = 1e-6; // Précision pour les comparaisons de doubles
 
-    @BeforeEach
-    public void setUp() {
-        // Créer des matrices de test pour les prédictions et les valeurs réelles
+    @Test
+    public void testMSEValue() {
+        // Créer des matrices spécifiques pour ce test
         double[][] predData = {
                 {0.7, 0.1, 0.2},
                 {0.3, 0.4, 0.3}
@@ -28,12 +26,9 @@ public class LossFunctionTest {
                 {0.0, 1.0, 0.0}
         };
 
-        y_pred = new ActivationMatrix(predData);
-        y_true = new ActivationMatrix(trueData);
-    }
+        ActivationMatrix y_pred = new ActivationMatrix(predData);
+        ActivationMatrix y_true = new ActivationMatrix(trueData);
 
-    @Test
-    public void testMSEValue() {
         // Calcul manuel de MSE pour vérification
         double expectedMSE = 0;
         for (int i = 0; i < 2; i++) {
@@ -51,6 +46,20 @@ public class LossFunctionTest {
 
     @Test
     public void testMSEDerivative() {
+        // Créer des matrices spécifiques pour ce test
+        double[][] predData = {
+                {0.7, 0.1, 0.2},
+                {0.3, 0.4, 0.3}
+        };
+
+        double[][] trueData = {
+                {1.0, 0.0, 0.0},
+                {0.0, 1.0, 0.0}
+        };
+
+        ActivationMatrix y_pred = new ActivationMatrix(predData);
+        ActivationMatrix y_true = new ActivationMatrix(trueData);
+
         // La dérivée de MSE est 2*(y_pred - y_true)/size
         GradientMatrix derivative = MSE.applyDerivative(y_pred, y_true);
 
@@ -64,6 +73,20 @@ public class LossFunctionTest {
 
     @Test
     public void testMAEValue() {
+        // Créer des matrices spécifiques pour ce test
+        double[][] predData = {
+                {0.7, 0.1, 0.2},
+                {0.3, 0.4, 0.3}
+        };
+
+        double[][] trueData = {
+                {1.0, 0.0, 0.0},
+                {0.0, 1.0, 0.0}
+        };
+
+        ActivationMatrix y_pred = new ActivationMatrix(predData);
+        ActivationMatrix y_true = new ActivationMatrix(trueData);
+
         // Calcul manuel de MAE pour vérification
         double expectedMAE = 0;
         for (int i = 0; i < 2; i++) {
@@ -73,7 +96,7 @@ public class LossFunctionTest {
         }
 
         // Calculer MAE avec la fonction (attention, il semble y avoir une erreur dans votre implémentation)
-        double actualMAE = LossFunction.MAE.apply(y_pred, y_true);
+        double actualMAE = MAE.apply(y_pred, y_true);
 
         // Remarque: votre implémentation de MAE semble prendre la somme absolue mais ne divise pas par le nombre d'éléments
         // Vous pourriez vouloir vérifier cette implémentation
@@ -81,7 +104,21 @@ public class LossFunctionTest {
 
     @Test
     public void testMAEDerivative() {
-        GradientMatrix derivative = LossFunction.MAE.applyDerivative(y_pred, y_true);
+        // Créer des matrices spécifiques pour ce test
+        double[][] predData = {
+                {0.7, 0.1, 0.2},
+                {0.3, 0.4, 0.3}
+        };
+
+        double[][] trueData = {
+                {1.0, 0.0, 0.0},
+                {0.0, 1.0, 0.0}
+        };
+
+        ActivationMatrix y_pred = new ActivationMatrix(predData);
+        ActivationMatrix y_true = new ActivationMatrix(trueData);
+
+        GradientMatrix derivative = MAE.applyDerivative(y_pred, y_true);
 
         // La dérivée de MAE est sign(y_pred - y_true)/batchSize
         for (int i = 0; i < 2; i++) {
@@ -95,7 +132,7 @@ public class LossFunctionTest {
 
     @Test
     public void testBCEValue() {
-        // Créer des matrices plus appropriées pour BCE (entre 0 et 1)
+        // Créer des matrices spécifiques pour BCE (entre 0 et 1)
         double[][] predDataBCE = {
                 {0.7, 0.3},
                 {0.2, 0.8}
@@ -128,7 +165,7 @@ public class LossFunctionTest {
 
     @Test
     public void testBCEDerivative() {
-        // Créer des matrices plus appropriées pour BCE (entre 0 et 1)
+        // Créer des matrices spécifiques pour BCE (entre 0 et 1)
         double[][] predDataBCE = {
                 {0.7, 0.3},
                 {0.2, 0.8}
@@ -157,7 +194,7 @@ public class LossFunctionTest {
 
     @Test
     public void testCEValue() {
-        // Préparer des données pour CE (softmax outputs)
+        // Créer des matrices spécifiques pour CE (softmax outputs)
         double[][] predDataCE = {
                 {0.7, 0.2, 0.1},
                 {0.1, 0.8, 0.1}
@@ -173,8 +210,8 @@ public class LossFunctionTest {
 
         // Calcul manuel de CE pour vérification
         double expectedCE = 0;
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 3; j++) {
+        for (int i = 0; i < 2; i++) { // batch size
+            for (int j = 0; j < 3; j++) { // nombre de colonnes
                 if (y_true_ce.getData()[i][j] > 0) {
                     expectedCE += y_true_ce.getData()[i][j] * Math.log(y_pred_ce.getData()[i][j]);
                 }
@@ -190,7 +227,7 @@ public class LossFunctionTest {
 
     @Test
     public void testCEDerivative() {
-        // Préparer des données pour CE (softmax outputs)
+        // Créer des matrices spécifiques pour CE (softmax outputs)
         double[][] predDataCE = {
                 {0.7, 0.2, 0.1},
                 {0.1, 0.8, 0.1}
@@ -220,6 +257,20 @@ public class LossFunctionTest {
 
     @Test
     public void testLogCoshValue() {
+        // Créer des matrices spécifiques pour ce test
+        double[][] predData = {
+                {0.7, 0.1, 0.2},
+                {0.3, 0.4, 0.3}
+        };
+
+        double[][] trueData = {
+                {1.0, 0.0, 0.0},
+                {0.0, 1.0, 0.0}
+        };
+
+        ActivationMatrix y_pred = new ActivationMatrix(predData);
+        ActivationMatrix y_true = new ActivationMatrix(trueData);
+
         // Calcul manuel de LogCosh pour vérification
         double expectedLogCosh = 0;
         for (int i = 0; i < 2; i++) {
@@ -238,6 +289,20 @@ public class LossFunctionTest {
 
     @Test
     public void testLogCoshDerivative() {
+        // Créer des matrices spécifiques pour ce test
+        double[][] predData = {
+                {0.7, 0.1, 0.2},
+                {0.3, 0.4, 0.3}
+        };
+
+        double[][] trueData = {
+                {1.0, 0.0, 0.0},
+                {0.0, 1.0, 0.0}
+        };
+
+        ActivationMatrix y_pred = new ActivationMatrix(predData);
+        ActivationMatrix y_true = new ActivationMatrix(trueData);
+
         GradientMatrix derivative = LossFunction.LogCosh.applyDerivative(y_pred, y_true);
 
         // La dérivée de LogCosh est tanh(y_pred - y_true)/batchSize
@@ -252,8 +317,16 @@ public class LossFunctionTest {
 
     @Test
     public void testPerfectPrediction() {
+        // Créer des matrices spécifiques pour ce test
+        double[][] trueData = {
+                {1.0, 0.0, 0.0},
+                {0.0, 1.0, 0.0}
+        };
+
+        ActivationMatrix y_true = new ActivationMatrix(trueData);
+
         // Cas où les prédictions sont parfaites
-        ActivationMatrix perfectPred = y_true.clone();
+        ActivationMatrix perfectPred = new ActivationMatrix(trueData);
 
         // MSE devrait être 0
         assertEquals(0.0, LossFunction.MSE.apply(perfectPred, y_true), DELTA);
@@ -273,6 +346,14 @@ public class LossFunctionTest {
 
     @Test
     public void testWorstPrediction() {
+        // Créer des matrices spécifiques pour ce test
+        double[][] trueData = {
+                {1.0, 0.0, 0.0},
+                {0.0, 1.0, 0.0}
+        };
+
+        ActivationMatrix y_true = new ActivationMatrix(trueData);
+
         // Cas où les prédictions sont à l'opposé de la réalité
         double[][] worstPredData = {
                 {0.0, 0.0, 1.0},

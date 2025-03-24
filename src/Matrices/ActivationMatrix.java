@@ -1,5 +1,7 @@
 package Matrices;
 
+import java.util.Arrays;
+
 /**
  * Représente une matrice d'activation d'une couche (Layer) d'un réseau de neurones (MLP).
  * Plutôt qu'un simple vecteur d'activation, cette classe permet de traiter plusieurs entrées
@@ -79,11 +81,10 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
 
     /**
      * Renvoie la taille du batch de la matrice d'activation,
-     * càd le nombre de colonnes de la matrice.
-     * @return
+     * càd le nombre de LIGNES de la matrice.
      */
     public int getBatchSize(){
-        return this.getNumberOfColumns();
+        return this.getNumberOfRows();
     }
 
     /**
@@ -102,4 +103,33 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
     public ActivationMatrix multiplyByWeightMatrix(WeightMatrix weightMatrix) {
         return this.multiply(weightMatrix);
     }
+
+    /**
+     * Centre la matrice sur l'axe des lignes.
+     * Si maxJ est la valeur maximale de la ligne J, alors
+     * soustrait maxJ à chaque (i,j).
+     *
+     * @mutable Modifie la matrice d'activation actuelle
+     * @intermédiaire Renvoie la matrice pour permettre le chaînage
+     */
+    public void centerOverRows() {
+        double[] maxOverRows = this.maxOverRows();
+        this.applyToElements((i,j) -> this.getData()[i][j] -= maxOverRows[i]);
+    }
+
+    /**
+     * Calcul le maximum de chaque ligne de la matrice.
+     * @return La même matrice d'activation normalisée selon l'axe des lignes
+     * @immutable Ne modifie pas la matrice d'activation actuelle
+     * @terminale Finit la chaîne d'opérations
+     */ // TODO factorizer
+    public double[] maxOverRows() {
+        double[] res = new double[this.getNumberOfRows()];
+        for (int i = 0; i < this.getNumberOfRows(); i++) {
+            res[i] = Arrays.stream(this.getData()[i]).max().getAsDouble();
+        }
+        return res;
+    }
+
+
 }

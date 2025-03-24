@@ -2,7 +2,7 @@ package Function;
 
 import Matrices.ActivationMatrix;
 
-import java.util.Random;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import static Function.InitializationFunction.*;
@@ -28,16 +28,16 @@ public enum ActivationFunction implements Function<ActivationMatrix,ActivationMa
 
 
     SoftMax(Xavier,
-            activationMatrix -> {
-                activationMatrix.applyFunction(Math::exp);
-                double[] sumOverRows = activationMatrix.sumOverRows();
-                activationMatrix.applyToElements((i, j) -> {
-                    activationMatrix.getData()[i][j] /= sumOverRows[i];
-                });
-                return activationMatrix;
+            activationmatrix -> {
+                activationmatrix.centerOverRows();
+                activationmatrix.applyFunction(Math::exp);
+                double[] sumOverRows = activationmatrix.sumOverRows();
+                activationmatrix.applyToElements((i, j) ->
+                        activationmatrix.getData()[i][j] /= sumOverRows[i]);
+                return activationmatrix;
             },
 
-            activationMatrix -> activationMatrix.applyFunction(d -> d*(1-d))
+            activationMatrix -> activationMatrix
 
     );
 
