@@ -2,6 +2,8 @@ package MLP.MNIST;
 
 import Matrices.ActivationMatrix;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class MnistTrainData extends ActivationMatrix {
 
     public MnistTrainData(MnistVector[] items) {
@@ -31,6 +33,18 @@ public class MnistTrainData extends ActivationMatrix {
                 this.getData()[i][j] = values[j];
             }
         }
+    }
+
+    public boolean isNormalized(){
+        AtomicBoolean res = new AtomicBoolean(true);
+        this.applyToElements((i,j) -> {
+            if(this.getData()[i][j] > 1){
+                res.set(false);
+            }
+        });
+
+        return res.get();
+
     }
 
 

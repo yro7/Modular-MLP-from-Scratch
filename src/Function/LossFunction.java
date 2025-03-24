@@ -7,6 +7,7 @@ import java.util.function.BiFunction;
 
 public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMatrix, Double> {
 
+    double epsilon = 1e-12; // Delta pour éviter les divisions / log de 0
     public Double apply(ActivationMatrix y_pred, ActivationMatrix y_true);
 
     /**
@@ -19,8 +20,15 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
      */
     public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true);
 
+    /**
+     * Mean Squared Error (Erreur quadratique)
+     */
     final LossFunction MSE = new MSE();
-    final LossFunction MAE = new MSE();
+
+    /**
+     * Mean Absolute Error (Erreur absolue moyenne)
+     */
+    final LossFunction MAE = new MAE();
 
     /**
      * Log-cosh Loss (Erreur Log-cosh). Voir <a href="https://stats.stackexchange.com/questions/464354/when-is-log-cosh-loss-used#464374">When is Log-Cosh Loss Used? Stackoverflow.</a>
@@ -28,10 +36,14 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
     final LossFunction LogCosh = new LogCosh();
 
     /**
-     * Binary Cross Entropy. Utilisé pour la classification binaire. Voir <a href="https://stats.stackexchange.com/questions/464354/when-is-log-cosh-loss-used#464374">When is Log-Cosh Loss Used? Stackoverflow.</a>
-     */
+     * Binary Cross Entropy. Utilisé pour la classification binaire.
+     **/
     final LossFunction BCE = new BCE();
 
+
+    /**
+     * Cross Entropy. Utilisé pour la classification multi-classes.
+     **/
     final LossFunction CE = new CE();
 
 
@@ -49,7 +61,7 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
         public GradientMatrix applyDerivative(ActivationMatrix output, ActivationMatrix expected) {
             return output.substract(expected)
                     .multiply(2)
-                    .divide(output.size())
+                    .divide(output.getBatchSize())
                     .toGradientMatrix();
         }
     }
@@ -61,12 +73,15 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
 
         @Override
         public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            return y_pred.substract(y_true).sign().divide(y_true.getBatchSize()).toGradientMatrix();
+            return y_pred.substract(y_true)
+                    .sign()
+                    .divide(y_true.getBatchSize())
+                    .toGradientMatrix();
         }
 
         @Override
         public Double apply(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            return Math.abs(y_pred.substract(y_true).sum());
+            return Math.abs(y_pred.substract(y_true).sum()) / y_pred.size();
         }
     }
 
@@ -75,11 +90,14 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
 
         @Override
         public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            return  y_pred.substract(y_true).tanh().divide(y_true.getBatchSize()).toGradientMatrix();
+            return  y_pred.substract(y_true)
+                    .tanh()
+                    .divide(y_true.getBatchSize())
+                    .toGradientMatrix();
         }
         @Override
         public Double apply(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            return y_pred.substract(y_true).cosh().log().sum() / y_true.getBatchSize();
+            return y_pred.substract(y_true).cosh().log().sum() / y_true.size();
         }
     }
 
@@ -87,40 +105,66 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
 
         @Override
         public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            ActivationMatrix y_pred2 = y_pred.clone().multiply(-1.0).add(1.0);
-            ActivationMatrix y_true2 = y_true.clone().multiply(-1.0).add(1.0);
-            return y_pred.hadamardQuotientAtRight(y_true)
-                    .add(y_pred2.hadamardQuotientAtRight(y_true2))
-                    .divide(-1*(y_pred.size()))
-                    .toGradientMatrix();
+            GradientMatrix res = new GradientMatrix(y_pred.getNumberOfRows(), y_pred.getNumberOfColumns());
+            res.applyToElements((i,j) -> {
+                        double p = y_pred.getData()[i][j];
+                        double y = y_true.getData()[i][j];
+                        res.getData()[i][j] = (-y/p + (1-y)/(1-p))/4.0;
+                    });
+            return res;
         }
 
         @Override
         public Double apply(ActivationMatrix y_pred, ActivationMatrix y_true) {
-
-            ActivationMatrix y_pred2 = y_pred.clone().multiply(-1.0).add(1.0);
-            ActivationMatrix y_true2 = y_true.clone().multiply(-1.0).add(1.0);
-
-            return y_pred.log().hadamardProduct(y_true)
-                    .add(y_pred2.log().hadamardProduct(y_true2)).sum() / -1.0*(y_pred.size());
+            final double[] res = {0.0};
+            y_pred.applyToElements((i,j) -> {
+                double p = y_pred.getData()[i][j];
+                double y = y_true.getData()[i][j];
+                res[0] += y * Math.log(p+epsilon) + (1 - y) * Math.log(1 - p+epsilon);
+            });
+            return res[0] / -4.0;
         }
     }
 
-    final class CE implements LossFunction {
+        final class CE implements LossFunction {
 
-        @Override
-        public Double apply(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            return y_pred.log().hadamardProduct(y_true)
-                    .sum() / (-1 * y_pred.getBatchSize());
-        }
+            @Override
+            public Double apply(ActivationMatrix y_pred, ActivationMatrix y_true) {
+                double res = 0;
+                for (int i = 0; i < y_true.getNumberOfRows(); i++) { // batch size
+                    for (int j = 0; j < y_true.getNumberOfColumns(); j++) { // nombre de colonnes
+                        if (y_true.getData()[i][j] > 0) {
+                            res += y_true.getData()[i][j] * Math.log(y_pred.getData()[i][j] + epsilon);
+                        }
+                    }
+                }
+                res /= -1*y_pred.getBatchSize();
+                return res;
+            }
 
-        @Override
-        public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true) {
-            return y_pred.hadamardQuotientAtRight(y_true)
-                    .divide(-1 * y_true.getBatchSize())
-                    .toGradientMatrix();
+            @Override
+            public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true) {
+                return y_pred.substract(y_true).toGradientMatrix();
+              /**  ActivationMatrix result = y_pred.clone();
+                // Initialiser tous les éléments à 0
+                for (int i = 0; i < result.getData().length; i++) {
+                    for (int j = 0; j < result.getData()[i].length; j++) {
+                        result.getData()[i][j] = 0;
+                    }
+                }
+
+                // Calculer -y_true/y_pred/batchSize seulement où y_true > 0
+                for (int i = 0; i < y_true.getData().length; i++) {
+                    for (int j = 0; j < y_true.getData()[i].length; j++) {
+                        if (y_true.getData()[i][j] > 0) {
+                            result.getData()[i][j] = (-y_true.getData()[i][j] / y_pred.getData()[i][j]) / y_true.getBatchSize();
+                        }
+                    }
+                }
+
+                return result.toGradientMatrix();**/
+            }
         }
-    }
 
 
 

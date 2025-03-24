@@ -1,6 +1,7 @@
 package MLP;
 
 import Function.ActivationFunction;
+import Function.ActivationFunction2;
 import Function.InitializationFunction;
 import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
+
+import static Function.ActivationFunction.SoftMax;
 
 public class MLPBuilder {
 
@@ -29,6 +32,12 @@ public class MLPBuilder {
 
     public MLP build(){
         assert (this.layers.size() > 1) : "Le MLP doit avoir au moins une couche cachée.";
+
+        for(Layer l : layers){
+            assert(l.getActivationFunction() != SoftMax || l.size() != 1) : "Utilisation de SoftMax dans "
+                    + "une couche avec un seul neuronne !";
+        }
+
         return new MLP(this.layers, dimInput);
     }
 

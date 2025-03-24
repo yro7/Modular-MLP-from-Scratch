@@ -22,7 +22,7 @@ public class Main {
         MLP mlp = MLP.builder(2)
                 .setRandomSeed(69)
                 .addLayer(4, ReLU)
-                .addLayer(1, ReLU)
+                .addLayer(1, Sigmoid)
                 .build();
 
         double[][] xorData = {
@@ -39,14 +39,14 @@ public class Main {
                 {0},
         };
 
+
         ActivationMatrix batchInput = new ActivationMatrix(xorData);
         ActivationMatrix batchTheorique = new ActivationMatrix(xorResult);
 
+
         loopBackpro(mlp, batchInput, batchTheorique, 10_000);
 
-        List<Pair<ActivationMatrix,ActivationMatrix>> res = mlp.feedForward(batchInput);
 
-        res.getLast().getA().print();
 
     }
 
@@ -64,14 +64,20 @@ public class Main {
     public static void loopBackpro(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique, int n){
         printLoss(mlp, batchInput, batchTheorique);
         IntStream.range(1,n).forEach(i -> {
-            mlp.updateParameters(batchInput, batchTheorique, CE);
+            mlp.updateParameters(batchInput, batchTheorique, BCE);
+            if(i % 100 == 0) {
+                System.out.print(" loss étape " + i);
+                printLoss(mlp, batchInput, batchTheorique);
+
+            }
+
     });
         printLoss(mlp, batchInput, batchTheorique);
 
     }
 
     public static void printLoss(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique){
-        System.out.println("Loss : " + mlp.computeLoss(batchInput, batchTheorique, CE));
+        System.out.println("Loss : " + mlp.computeLoss(batchInput, batchTheorique, BCE));
     }
 
 

@@ -1,5 +1,6 @@
 package Matrices;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -33,7 +34,7 @@ public abstract class Matrix<T extends Matrix<T>> {
 
     /**
      * Constructeur à partir d'un tableau bidimensionnel.
-     * Effectue une copie du tableau pour créer la nouvelle matrice.
+     * Effectue une copie profonde du tableau pour créer la nouvelle matrice.
      * @param data Tableau 2D de valeurs double
      */
     public Matrix(double[][] data) {
@@ -77,6 +78,15 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public double[][] getData() {
         return data;
+    }
+
+    /**
+     * Récupère les données brutes de la matrice.
+     *
+     * @return Le tableau bidimensionnel contenant les données
+     */
+    public double getData(int i, int j) {
+        return data[i][j];
     }
 
 
@@ -311,7 +321,7 @@ public abstract class Matrix<T extends Matrix<T>> {
 
     /**
      * Calcule la somme des éléments de chaque ligne.
-     * Si la matrice est de taille n x p, renvoie un vecteur n x 1.
+     * Si la matrice est de taille n x p, renvoie un vecteur 1 x n.
      *
      * @return Un tableau 2D représentant les sommes par ligne
      * @immutable Ne modifie pas la matrice actuelle
@@ -319,6 +329,7 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public double[] sumOverRows(){
         double[] res = new double[this.getNumberOfRows()];
+        Arrays.fill(res, 0.0);
         applyToElements((i, j) -> {
             res[i] += this.getData()[i][j];
         });
@@ -326,7 +337,9 @@ public abstract class Matrix<T extends Matrix<T>> {
         return res;
     }
 
- // TODO FIX LA FONCTION HAAAAAAAAAAAAAAAAA
+
+
+    //TODO fix mais suis pas sur
     /**
      * Calcule la somme des éléments de chaque colonne.
      * Si la matrice est de taille n x p, renvoie un vecteur p x 1.
@@ -658,4 +671,5 @@ public abstract class Matrix<T extends Matrix<T>> {
         });
         return res[0];
     }
+
 }
