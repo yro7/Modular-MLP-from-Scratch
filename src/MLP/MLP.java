@@ -6,13 +6,14 @@ import Matrices.BiasVector;
 import Matrices.GradientMatrix;
 import Matrices.WeightMatrix;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import static Function.ActivationFunction.SoftMax;
 import static Function.LossFunction.CE;
 
-public class MLP {
+public class MLP implements Serializable {
 
     private final int dimInput;
     private final List<Layer> layers;
@@ -226,4 +227,5 @@ public class MLP {
     public int getDimInput() {
         return this.dimInput;
     }
+
 }
