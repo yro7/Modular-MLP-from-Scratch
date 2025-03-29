@@ -6,7 +6,8 @@ import Matrices.BiasVector;
 import Matrices.GradientMatrix;
 import Matrices.WeightMatrix;
 
-import java.io.Serializable;
+import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +16,8 @@ import static Function.LossFunction.CE;
 
 public class MLP implements Serializable {
 
-    private final int dimInput;
-    private final List<Layer> layers;
+    private int dimInput;
+    private List<Layer> layers;
 
     public MLP(List<Layer> layers, int dimInput){
         this.layers = layers;
@@ -33,10 +34,10 @@ public class MLP implements Serializable {
      * dans l'ordre.
      */
 
-    public List<Pair<ActivationMatrix,ActivationMatrix>> feedForward(ActivationMatrix input){
+    public FeedForwardResult feedForward(ActivationMatrix input){
         assert(input.getNumberOfColumns() == dimInput) : "Erreur : dim d'entrée attendue = " + dimInput + " , obtenue : " + input.getNumberOfColumns() + ".";
 
-        List<Pair<ActivationMatrix,ActivationMatrix>> result = new ArrayList<>();
+        FeedForwardResult result = new FeedForwardResult();
         ActivationMatrix activationMatrixOfLayer = input;
 
 
@@ -46,9 +47,8 @@ public class MLP implements Serializable {
             // Calcul de  f(AxW + B)
             activationMatrixOfLayer = layer.getActivationFunction()
                     .apply(activationsBeforeAF.clone()); // Clone nécessaire pour éviter de modifier
-                                                         // activationsBeforeAF
-
-            result.add(new Pair<>(activationMatrixOfLayer, activationsBeforeAF));
+                                                                     // activationsBeforeAF
+            result.add(activationMatrixOfLayer, activationsBeforeAF);
         }
 
 
@@ -62,7 +62,7 @@ public class MLP implements Serializable {
      * @return le coût associé
      */
     public double computeLoss(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction){
-        ActivationMatrix networkOutput = feedForward(input).getLast().getA();
+        ActivationMatrix networkOutput = feedForward(input).getNetworkOutput();
         return lossFunction.apply(networkOutput, expectedOutput);
     }
 
@@ -97,10 +97,10 @@ public class MLP implements Serializable {
      */
     public List<Pair<GradientMatrix,BiasVector>> backpropagate(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction) {
         List<Pair<GradientMatrix,BiasVector>> gradients = new ArrayList<>();
-        List<Pair<ActivationMatrix, ActivationMatrix>> activations = this.feedForward(input);
+        FeedForwardResult activations = this.feedForward(input);
         int L = layers.size();
-        ActivationMatrix a_L = activations.getLast().getA(); // Activations de la dernière couche APRES fonction d'activation
-        ActivationMatrix z_L = activations.getLast().getB(); // Activations de la dernière couche AVANT fonction d'activation
+        ActivationMatrix a_L = activations.getNetworkOutput(); // Activations de la dernière couche APRES fonction d'activation
+        ActivationMatrix z_L = activations.getNetworkOutput_BeforeAF(); // Activations de la dernière couche AVANT fonction d'activation
 
         // Vérification des dimensions de sortie
         assert(expectedOutput.hasSameDimensions(a_L)) : String.format(
@@ -112,7 +112,7 @@ public class MLP implements Serializable {
         GradientMatrix delta_L = this.computeOutputGradient(lossFunction, expectedOutput, a_L, z_L);
 
         // Calcul des gradients pour la couche de sortie
-        ActivationMatrix a_L_minus_1 = (L-1 > 0) ? activations.get(L-2).getA() : input;
+        ActivationMatrix a_L_minus_1 = (L-1 > 0) ? activations.getResult_PostAF(L-2) : input;
         GradientMatrix dL_dW_L = delta_L.multiplyAtRight(a_L_minus_1.transpose());
 
         BiasVector dL_db_L = delta_L.sumErrorTerm();
@@ -125,8 +125,8 @@ public class MLP implements Serializable {
 
         for (int l = L-2; l >= 0; l--) {
 
-            ActivationMatrix z_l = activations.get(l).getB(); // Activations Pre-AF
-            ActivationMatrix a_l_minus_1 = (l > 0) ? activations.get(l-1).getA() : input; // Activations Post-AF
+            ActivationMatrix z_l = activations.getResult_PreAF(l); // Activations Pre-AF
+            ActivationMatrix a_l_minus_1 = (l > 0) ? activations.getResult_PostAF(l-1) : input; // Activations Post-AF
 
             Layer layer_l_plus_1 = this.layers.get(l+1);
             Layer layer_l = this.layers.get(l);
@@ -226,6 +226,131 @@ public class MLP implements Serializable {
 
     public int getDimInput() {
         return this.dimInput;
+    }
+
+
+    public void serialize(String modelName) {
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(modelName + ".mlp");
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            this.writeObject(objectOutputStream);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+
+    }
+
+    /**
+     * Entraîne le modèle en fonction du {@link Trainer} donné,
+     * et renvoie le modèle entraîné.
+     **/
+    public MLP train(Trainer trainer){
+        // On délègue simplement à trainer
+        // pour éviter de trop bloat la classe MLP qui est déjà bien remplie
+        trainer.train(this);
+        return this;
+    }
+
+    // TODO plus d'insight pour les exceptions.
+    public static MLP importModel(String modelName) {
+        MLP res;
+        try {
+            FileInputStream fileInputStream
+                    = new FileInputStream(modelName + ".mlp");
+            ObjectInputStream objectInputStream
+                    = new ObjectInputStream(fileInputStream);
+            res = MLP.readObject(objectInputStream);
+            objectInputStream.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Erreur : Modèle '" + modelName + "' non trouvé. Vérifiez le nom du fichier");
+            System.out.println("Pour importer le modèle 'mnist_resolver.mlp', " +
+                    "l'argument doit être 'mnist_resolver' (sans l'extension).");
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return res;
+    }
+
+
+
+    public void writeObject(java.io.ObjectOutputStream out) throws IOException {
+         out.writeObject(this.dimInput); // Dimension de l'entrée
+         out.writeObject(this.getLayers().size()); // Nombre de layers
+        for(Layer layer : this.layers) { // Sauvegarde des layers avec leur contenu (AF / Poids & Biais
+            layer.writeObject(out);
+        }
+    }
+    public static MLP readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        MLP nullMLP = MLP.builder(1).addIdentityLayer(1).addIdentityLayer(1).build();
+        int dimInput = (Integer) in.readObject();
+        int layersSize = (Integer) in.readObject();
+        nullMLP.dimInput = dimInput;
+        nullMLP.layers = new ArrayList<>(layersSize);
+        for(int i = 0; i < layersSize; i++){
+            Layer layer_i = new Layer(null, null, null);
+            layer_i.readObject(in);
+            nullMLP.getLayers().add(layer_i);
+        }
+        return nullMLP;
+    }
+
+    public void readObjectNoData() throws ObjectStreamException {
+
+    };
+
+    /**
+     * Encapsule simplement les résultats de {@link #feedForward} du réseau
+     * pour des notations plus compactes
+     */
+    public static class FeedForwardResult {
+
+        List<Pair<ActivationMatrix, ActivationMatrix>> results;
+
+        /**
+         * Renvoie la {@link ActivationMatrix} de la couche n°i du MLP,
+         * avant application de la fonction d'activation de la couche.
+         * @param i
+         * @return
+         */
+        public ActivationMatrix getResult_PreAF(int i){
+            return this.results.get(i).getB();
+        }
+
+        /**
+         * Renvoie la {@link ActivationMatrix} de la couche n°i du MLP,
+         * après application de la fonction d'activation de la couche.
+         * @param i
+         * @return
+         */
+        public ActivationMatrix getResult_PostAF(int i) {
+            return this.results.get(i).getA();
+        }
+
+        public void add(ActivationMatrix activationMatrixOfLayer, ActivationMatrix activationsBeforeAF) {
+            this.results.add(new Pair<>(activationMatrixOfLayer, activationsBeforeAF));
+        }
+
+        /**
+         * Renvoie la matrice d'activation de la dernière couche du réseau,
+         * après application de la fonction d'activation.
+         * @return
+         */
+        public ActivationMatrix getNetworkOutput() {
+            return this.results.getLast().getA();
+        }
+
+        /**
+         * Renvoie la matrice d'activation de la dernière couche du réseau,
+         * avant application de la fonction d'activation.
+         * @return
+         */
+        public ActivationMatrix getNetworkOutput_BeforeAF() {
+            return this.results.getLast().getB();
+        }
     }
 
 }

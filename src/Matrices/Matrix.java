@@ -15,7 +15,7 @@ import java.util.function.Function;
  * - Opération intermédiaire : Retourne un objet permettant de continuer les opérations (method chaining)
  * - Opération terminale : Retourne une valeur finale et termine la chaîne d'opérations
  */
-public abstract class Matrix<T extends Matrix<T>> {
+public abstract class Matrix<T extends Matrix<T>> implements Cloneable{
 
     double[][] data;
 
@@ -48,6 +48,15 @@ public abstract class Matrix<T extends Matrix<T>> {
      */
     public Matrix(Matrix<?> source){
         this(source.getData());
+    }
+
+    /**
+     * Construit une matrice ligne de taille (1 x data.length) à partir d'un tableau de double.
+     * @param data
+     */
+    public Matrix(double[] data){
+        this(1, data.length);
+        this.getData()[0] = data;
     }
 
     /**

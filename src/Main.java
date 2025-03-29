@@ -1,10 +1,13 @@
 import MLP.MLP;
 import Matrices.*;
 
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import MLP.Pair;
+import MLP.Trainer;
 
 import javax.swing.text.Position;
 
@@ -19,35 +22,12 @@ import static Function.LossFunction.*;
 public class Main {
     public static void main(String[] args) {
 
-        MLP mlp = MLP.builder(2)
-                .setRandomSeed(69)
-                .addLayer(4, ReLU)
-                .addLayer(1, Sigmoid)
+        Trainer trainer = Trainer.builder()
+                .setLossFunction(MSE)
+                .setTrainingData(null)
+                .setTestData(null)
+                .setOptimizer(null)
                 .build();
-
-        double[][] xorData = {
-                {0, 0},
-                {0, 1},
-                {1, 0},
-                {1, 1}
-        };
-
-        double[][] xorResult = {
-                {0},
-                {1},
-                {1},
-                {0},
-        };
-
-
-        ActivationMatrix batchInput = new ActivationMatrix(xorData);
-        ActivationMatrix batchTheorique = new ActivationMatrix(xorResult);
-
-
-        loopBackpro(mlp, batchInput, batchTheorique, 10_000);
-
-
-
     }
 
     public static double[][] creerTableau(int n, int p){
@@ -82,6 +62,29 @@ public class Main {
 
 
     public static void save(){
+        MLP mlp = MLP.builder(2)
+                .setRandomSeed(69)
+                .addLayer(4, ReLU)
+                .addLayer(1, Sigmoid)
+                .build();
+
+        double[][] xorData = {
+                {0, 0},
+                {0, 1},
+                {1, 0},
+                {1, 1}
+        };
+
+        double[][] xorResult = {
+                {0},
+                {1},
+                {1},
+                {0},
+        };
+
+
+        ActivationMatrix batchInput = new ActivationMatrix(xorData);
+        ActivationMatrix batchTheorique = new ActivationMatrix(xorResult);
 
 
     }

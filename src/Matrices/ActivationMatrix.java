@@ -31,6 +31,10 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
         super(data);
     }
 
+    public ActivationMatrix(double[] input) {
+        super(input);
+    }
+
     /**
      * Méthode factory pour créer une nouvelle instance d'ActivationMatrix.
      * Utilisée en interne par les méthodes héritées de Matrix.

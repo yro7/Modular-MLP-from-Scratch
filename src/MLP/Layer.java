@@ -5,9 +5,13 @@ import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
 import Matrices.WeightMatrix;
 
+import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.function.Function;
 
-public class Layer {
+public class Layer implements Serializable {
 
 
     public WeightMatrix weightMatrix;
@@ -92,5 +96,23 @@ public class Layer {
     public BiasVector getBiasVector(){
         return this.biasVector;
     }
+
+    public void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.writeObject(this.activationFunction); // Fonction d'activation
+        out.writeObject(this.getWeightMatrix().getData()); // Poids de la couche
+        out.writeObject(this.getBiasVector().getData());// Biais de la couche
+    }
+    public void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        this.activationFunction = (ActivationFunction) in.readObject();
+        this.weightMatrix = new WeightMatrix((double[][]) in.readObject());
+        this.biasVector = new BiasVector((double[][]) in.readObject());
+    }
+
+    public void readObjectNoData() throws ObjectStreamException {
+
+    };
+
+
+
 
 }
