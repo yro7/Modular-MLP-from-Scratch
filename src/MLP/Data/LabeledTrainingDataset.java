@@ -13,14 +13,12 @@ import java.util.List;
  */
 public abstract class LabeledTrainingDataset<InputType,OutputType> extends LabeledDataset<InputType, OutputType> {
 
-    int batchSize;
+    public int batchSize;
 
-    public LabeledTrainingDataset(int batchSize, int size, int inputDimension, int outputDimension,
-                                  String path, String labelPath) {
-        this(size, inputDimension, outputDimension, path, labelPath);
-        this.batchSize = batchSize;
-
+    public LabeledTrainingDataset(int size, int inputDimension, int outputDimension, String path, String labelPath) {
+        super(size, inputDimension, outputDimension, path, labelPath);
     }
+
 
     /**
      * Récupère un tableau d'entrées et le met sous forme de batch.

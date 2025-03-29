@@ -7,12 +7,15 @@ package MLP;
  */
 public class Classification {
 
-    int[] classes;
+    double[] classes;
 
     public Classification(int outputDimension, int labelNumber) {
-        this.classes = new int[outputDimension];
-        this.classes[labelNumber] = 1;
+        this.classes = new double[outputDimension];
+        this.classes[labelNumber] = 1.0;
     }
 
 
+    public double[] getHotEncoding() {
+        return this.classes;
+    }
 }

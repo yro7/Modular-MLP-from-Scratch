@@ -6,4 +6,10 @@ package MLP;
  * du MLP (voir {@link MLP#updateParameters}.
  */
 public class Optimizer {
+
+    int temp;
+
+    public Optimizer(int temp) {
+        this.temp = temp;
+    }
 }

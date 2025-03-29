@@ -5,6 +5,7 @@ import MLP.Data.LabeledDataset;
 import MLP.MLP;
 import Matrices.ActivationMatrix;
 import MLP.Trainer;
+import MLP.Optimizer;
 
 import java.io.IOException;
 
@@ -18,24 +19,19 @@ public class Instancier {
 
     public static void main(String[] args) throws IOException {
         // Chemins vers les fichiers MNIST
-        String imagesPath = "src/MLP/MNIST/data/t10k-images.idx3-ubyte";
-        String labelsPath = "src/MLP/MNIST/data/t10k-labels.idx1-ubyte";
-
         // Génère un ensemble de données d'entraînement Mnist
-        MnistTrainingDataset trainData = new MnistTrainingDataset(2000, 60_000, 784, 10,
-                imagesPath, labelsPath);
-        //MnistTestData testData = new MnistTestData();
+        MnistTrainingDataset2 trainData = new MnistTrainingDataset2(10);
+
+        MnistTestData testData = new MnistTestData();
 
 
         LabeledBatch batch = trainData.getBatch(4);
 
-        batch.getInput().print();
 
-        /**
         // Construction du trainer
         Trainer mnistTrainer = Trainer.builder()
                 .setLossFunction(CE)
-                .setOptimizer(null)
+                .setOptimizer(new Optimizer(1))
                 .setTrainingData(trainData)
                 .setTestData(testData)
                 .setEpoch(10)
@@ -50,19 +46,10 @@ public class Instancier {
                 .build()
                 .train(mnistTrainer);
 
-        Evaluation eval = mnistTrainer.evaluate(mnistMLP);**/
+        Evaluation eval = mnistTrainer.evaluate(mnistMLP);
 
     }
 
-    private static void printMnistMatrix(final MnistMatrix matrix) {
-        System.out.println("label: " + matrix.getLabel());
-        for (int r = 0; r < matrix.getNumberOfRows(); r++ ) {
-            for (int c = 0; c < matrix.getNumberOfColumns(); c++) {
-                System.out.print(matrix.getValue(r, c) + " ");
-            }
-            System.out.println();
-        }
-    }
 
     public static void printLoss(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique){
         System.out.println("Loss : " + mlp.computeLoss(batchInput, batchTheorique, CE));

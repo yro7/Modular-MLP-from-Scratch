@@ -18,7 +18,7 @@ public abstract class LabeledDataset<InputType, OutputType> {
      * Par exemple pour du MNIST, le nombre d'images de l'ensemble (60 000).
      * @return
      */
-    int size;
+    protected int size;
     int inputDimension;
     public int outputDimension;
 
@@ -128,9 +128,8 @@ public abstract class LabeledDataset<InputType, OutputType> {
         }
 
         public LabeledBatch(double[] input, double[] output) {
-            ActivationMatrix inputMatrix = new ActivationMatrix(input);
-            ActivationMatrix outputMatrix = new ActivationMatrix(output);
-            this(inputMatrix, outputMatrix);
+            this.input = new ActivationMatrix(input);
+            this.output = new ActivationMatrix(output);
         }
 
         public ActivationMatrix getInput() {
