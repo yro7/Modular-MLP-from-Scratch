@@ -15,6 +15,7 @@ import java.util.Random;
 
 import static Function.ActivationFunction.*;
 import static Function.LossFunction.MSE;
+import static MLP.MLP.FeedForwardResult;
 import static org.junit.Assert.*;
 
 public class MLPTest {
@@ -75,7 +76,7 @@ public class MLPTest {
         // Créer l'entrée
         ActivationMatrix input = new ActivationMatrix(creerTableau(mlp.getDimInput(), batchSize));
 
-        List<Pair<ActivationMatrix, ActivationMatrix>> activations = mlp.feedForward(input);
+        FeedForwardResult activations = mlp.feedForward(input);
 
         for(int l = 0; l < mlp.getLayers().size(); l++){
 
@@ -87,10 +88,9 @@ public class MLPTest {
 
             assert(cloneWeight.equals(weightOfLayer)) : "Le feedforward a modifié les poids du réseau.";
             assert(cloneBias.equals(biasOfLayer)) : "Le feedforward a modifié les biais du réseau.";
-            assert(activations.get(l).getA().getNumberOfRows() == weightOfLayer.getNumberOfRows()) : "Le nombre de neurones dans le résultat du feedforward n'est pas égal au nombre de neuronnes de la couche.";
+            assert(activations.getResult_PostAF(l).getNumberOfRows() == weightOfLayer.getNumberOfRows()) : "Le nombre de neurones dans le résultat du feedforward n'est pas égal au nombre de neuronnes de la couche.";
         }
 
-        assert(activations.size() == mlp.getLayers().size());
     }
 
 
@@ -129,10 +129,10 @@ public class MLPTest {
         ActivationMatrix input = createRandomActivationMatrix(inputDim, batchSize);
 
         // Run feedForward
-        List<Pair<ActivationMatrix, ActivationMatrix>> activations = customMlp.feedForward(input);
+        FeedForwardResult activations = customMlp.feedForward(input);
 
         // Verify tanh activations (between -1 and 1)
-        ActivationMatrix hiddenActivations = activations.get(0).getA();
+        ActivationMatrix hiddenActivations = activations.getResult_PostAF(0);
         for (int i = 0; i < numberOfLayers; i++) {
             for (int j = 0; j < batchSize; j++) {
                 double value = hiddenActivations.getData()[i][j];

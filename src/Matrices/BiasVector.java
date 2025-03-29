@@ -14,10 +14,7 @@ public class BiasVector extends Matrix<BiasVector> {
         super(1, length);
     }
 
-    public BiasVector(double[] data){
-        this(data.length);
-        this.getData()[0] = data;
-    }
+
 
     /**
      * Initialise un nouveau vecteur de biais selon la fonction d'initialisation
@@ -33,6 +30,10 @@ public class BiasVector extends Matrix<BiasVector> {
 
     public BiasVector(double[][] data) {
         super(data);
+    }
+
+    public BiasVector(double[] biasVectorData) {
+        super(biasVectorData);
     }
 
     public static BiasVector createZeroBiasVector(int dimension) {
