@@ -320,6 +320,10 @@ public class MLP implements Serializable {
             return this.results.get(i).getB();
         }
 
+        public FeedForwardResult() {
+            this.results = new ArrayList<>();
+        }
+
         /**
          * Renvoie la {@link ActivationMatrix} de la couche n°i du MLP,
          * après application de la fonction d'activation de la couche.

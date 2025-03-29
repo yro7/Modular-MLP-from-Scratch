@@ -12,10 +12,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MnistTrainingDataset extends LabeledTrainingDataset<MnistImage, Classification> {
 
+    public static final String imagesPath = "src/MLP/MNIST/data/t10k-images.idx3-ubyte";
+    public static final String labelsPath = "src/MLP/MNIST/data/t10k-labels.idx1-ubyte";
 
-    public MnistTrainingDataset(int batchSize, int size, int inputDimension, int outputDimension,
-                                String path, String labelPath) {
-        super(batchSize, size, inputDimension, outputDimension, path, labelPath);
+    public MnistTrainingDataset(int batchSize, int size, int inputDimension, int outputDimension) {
+        super(size, inputDimension, outputDimension, imagesPath, labelsPath);
+        this.batchSize = batchSize;
+
     }
 
     @Override
@@ -49,7 +52,6 @@ public class MnistTrainingDataset extends LabeledTrainingDataset<MnistImage, Cla
             System.out.println("labels magic number is: " + labelMagicNumber);
             System.out.println("number of labels is: " + numberOfLabels);
 
-            MnistMatrix[] data = new MnistMatrix[numberOfItems];
 
             assert numberOfItems == numberOfLabels;
 
@@ -60,7 +62,7 @@ public class MnistTrainingDataset extends LabeledTrainingDataset<MnistImage, Cla
                 mnistImage = new MnistImage();
 
                 int labelNumber = labelInputStream.readUnsignedByte();
-                label = new Classification(this.outputDimension, labelNumber);
+                label = new Classification(this.outputDimension, 4); //TODO fix label import
 
                 for (int r = 0; r < nRows; r++) {
                     for (int c = 0; c < nCols; c++) {
