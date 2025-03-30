@@ -1,6 +1,7 @@
 package Matrices;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 /**
  * Représente une matrice d'activation d'une couche (Layer) d'un réseau de neurones (MLP).
@@ -134,6 +135,32 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
         }
         return res;
     }
+
+    public ActivationMatrix hardmax() {
+        return this.oneHotEncode(Utils::argmax);
+    }
+
+    /**
+     * Pour chaque ligne de la matrice, met toutes les valeurs à 0 sauf une seule.
+     * C'est la fonction indiceFinder qui se charge pour chaque ligne de calculer
+     * lequel des indices doit valoir 1.
+     * @return La même matrice d'activation one-hot encodée.
+     * @mutable Modifie la matrice d'activation actuelle
+     * @intermédiaire Renvoie la matrice pour permettre le chaînage
+     */
+    public ActivationMatrix oneHotEncode(Function<double[], Integer> indiceFinder) {
+        double[][] data = this.getData();
+        for(int i = 0; i < this.getNumberOfRows(); i++){
+            int indice = indiceFinder.apply(data[i]);
+            for(int j = 0; j < this.getNumberOfColumns(); j++) {
+                data[i][j] = (j == indice) ? 1 : 0;
+            }
+        }
+
+        return this;
+    }
+
+
 
 
 }

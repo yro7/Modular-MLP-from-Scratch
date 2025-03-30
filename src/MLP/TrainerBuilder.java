@@ -1,8 +1,7 @@
 package MLP;
-
 import Function.LossFunction;
-import MLP.Data.LabeledTestData;
-import MLP.Data.LabeledTrainingDataset;
+import MLP.Data.LabeledDataset;
+import MLP.Data.Loaders.Dataloader;
 
 /**
  * Permet de créer facilement un Trainer.
@@ -24,16 +23,11 @@ public class TrainerBuilder {
         return this;
     }
 
-    public TrainerBuilder setTestData(LabeledTestData testData){
-        this.product.testData = testData;
+    public TrainerBuilder setDataset(LabeledDataset dataset) {
+        this.product.dataset = dataset;
         return this;
     }
 
-    public TrainerBuilder setTrainingData(LabeledTrainingDataset labeledTrainingDataset) {
-        this.product.labeledTrainingDataset = labeledTrainingDataset;
-        return this;
-
-    }
 
     public TrainerBuilder setOptimizer(Optimizer optimizer){
         this.product.optimizer = optimizer;
@@ -46,6 +40,8 @@ public class TrainerBuilder {
     }
 
     public TrainerBuilder setBatchSize(int batchSize){
+        this.product.dataset.testDataloader.batchSize = batchSize;
+        this.product.dataset.trainDataLoader.batchSize = batchSize;
         this.product.batchSize = batchSize;
         return this;
     }
@@ -59,8 +55,7 @@ public class TrainerBuilder {
 
     public Trainer build(){
         assert (this.hasLossFunction()) : "Le Trainer doit avoir une fonction de coût !";
-        assert (this.hasTestData()) : "Le Trainer doit avoir un ensemble de test !";
-        assert (this.hasTrainData()) : "Le Trainer doit avoir un ensemble d'entraînement !";
+        assert (this.hasDataset()) : "Le Trainer doit avoir dataset !";
         assert (this.hasOptimizer()) : "Le Trainer doit avoir un Optimizer !";
 
         return this.product;
@@ -70,12 +65,9 @@ public class TrainerBuilder {
         return (this.product().lossFunction != null);
     }
 
-    private boolean hasTrainData() {
-        return (this.product().labeledTrainingDataset != null);
-    }
 
-    private boolean hasTestData() {
-        return (this.product.testData != null);
+    private boolean hasDataset() {
+        return (this.product.dataset != null);
     }
 
     private boolean hasOptimizer() {
