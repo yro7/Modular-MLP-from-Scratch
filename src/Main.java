@@ -24,8 +24,6 @@ public class Main {
 
         Trainer trainer = Trainer.builder()
                 .setLossFunction(MSE)
-                .setTrainingData(null)
-                .setTestData(null)
                 .setOptimizer(null)
                 .build();
     }
@@ -39,21 +37,6 @@ public class Main {
             }
         }
         return res;
-    }
-
-    public static void loopBackpro(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique, int n){
-        printLoss(mlp, batchInput, batchTheorique);
-        IntStream.range(1,n).forEach(i -> {
-            mlp.updateParameters(batchInput, batchTheorique, BCE);
-            if(i % 100 == 0) {
-                System.out.print(" loss étape " + i);
-                printLoss(mlp, batchInput, batchTheorique);
-
-            }
-
-    });
-        printLoss(mlp, batchInput, batchTheorique);
-
     }
 
     public static void printLoss(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique){

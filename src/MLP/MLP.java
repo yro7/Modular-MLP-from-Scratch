@@ -66,25 +66,30 @@ public class MLP implements Serializable {
         return lossFunction.apply(networkOutput, expectedOutput);
     }
 
-    public void updateParameters(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction){
-        assert lossFunction != CE || (this.getLastLayer().getActivationFunction() == SoftMax) : "La couche de sortie du réseau " +
-                "devrait être Softmax si la fonction de coût utilisée est la Cross Entropie !";
 
-        List<Pair<GradientMatrix,BiasVector>> gradients = backpropagate(input, expectedOutput, lossFunction);
+    /**
+     * Entraîne le modèle en fonction du {@link Trainer} donné,
+     * et renvoie le modèle entraîné.
+     **/
+    public MLP train(Trainer trainer){
+        // On délègue simplement à trainer
+        // pour éviter de trop bloat la classe MLP qui est déjà bien remplie
+        trainer.train(this);
+        return this;
+    }
 
-        // TODO IMPLEMENT OPTIMIZERS
-        double learningRate = 0.0001;
-
-        for(int l = 0; l < this.layers.size(); l++){
-            GradientMatrix weightCorrection = gradients.get(l).getA().clone().multiply(learningRate);
-            BiasVector biasGradient = gradients.get(l).getB().clone().multiply(learningRate);
-
-            Layer currentLayer = this.getLayer(l);
-
-            currentLayer.getWeightMatrix().substract(weightCorrection);
-            currentLayer.getBiasVector().substract(biasGradient);
-        }
-
+    /**
+     * Mets à jour les poids & biais du réseau en fonction pour un couple (batch, sortie théorique),
+     * en fonction de l'{@link Optimizer} choisi.
+     * La méthode délègue simplement au Optimizer concerné la gestion de l'update.
+     * @param input La matrice
+     * @param expectedOutput
+     * @param lossFunction
+     * @param optimizer
+     */
+    public void updateParameters(ActivationMatrix input, ActivationMatrix expectedOutput,
+                                 LossFunction lossFunction, Optimizer optimizer){
+        optimizer.updateParameters(input, expectedOutput, lossFunction, this);
 
     }
 
@@ -240,17 +245,6 @@ public class MLP implements Serializable {
             throw new RuntimeException();
         }
 
-    }
-
-    /**
-     * Entraîne le modèle en fonction du {@link Trainer} donné,
-     * et renvoie le modèle entraîné.
-     **/
-    public MLP train(Trainer trainer){
-        // On délègue simplement à trainer
-        // pour éviter de trop bloat la classe MLP qui est déjà bien remplie
-        trainer.train(this);
-        return this;
     }
 
     // TODO plus d'insight pour les exceptions.
