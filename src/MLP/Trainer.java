@@ -36,6 +36,10 @@ public class Trainer {
      * Rend l'entraînement plus lent mais permet de suivre l'avancement. **/
     public boolean verbose;
 
+
+    long timeStartTraining;
+    long timeEndTraining;
+
     /**
      * Renvoie un nouveau Trainer avec des variables par défaut
      */
@@ -43,6 +47,8 @@ public class Trainer {
         this.verbose = false;
         this.epochs = 1;
         this.batchSize = 1;
+        this.timeEndTraining = -1;
+        this.timeStartTraining = -1;
     }
 
     public static TrainerBuilder builder() {
@@ -74,6 +80,8 @@ public class Trainer {
         System.out.println();
         System.out.println();
 
+        this.timeStartTraining = System.currentTimeMillis();
+
         for(int i = 0; i < this.numberOfEpochs(); i++) {
 
             for(int j = 0; j < this.getTrainingData().getNumberOfBatches(); j++) {
@@ -91,6 +99,14 @@ public class Trainer {
             }
 
         }
+
+        this.timeEndTraining = System.currentTimeMillis();
+
+            Evaluation evaluation = this.evaluate(mlp);
+            System.out.println("Evaluation de fin d'entraînement du modèle :");
+            evaluation.print();
+            System.out.println();
+            System.out.println("Temps d'entraînement : " + this.getTrainingTime()/1000 + " secondes.");
     }
 
     private Optimizer getOptimizer() {
@@ -179,6 +195,16 @@ public class Trainer {
             ;
             System.out.println("Nombre de prédictions correctes : " + this.TP + "/" + size/10);
         }
+    }
+
+    /**
+     * Renvoie le temps qui fut nécessaire pour finir l'entraînement.
+     * @return
+     */
+    public long getTrainingTime() {
+        assert(this.timeStartTraining != -1) : "Le Trainer n'a pas encore commencé son entraînement !";
+        assert(this.timeEndTraining != -1) : "Le Trainer n'a pas encore fini son entraînement !";
+        return this.timeEndTraining - this.timeStartTraining;
     }
 
 

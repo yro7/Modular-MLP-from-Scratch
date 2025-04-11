@@ -25,11 +25,12 @@ public class Instancier {
         // Génère un ensemble de données d'entraînement Mnist
         MnistDataset mnistDataset = new MnistDataset();
 
+        Adam adam = new Adam();
 
         // Construction du trainer
         Trainer mnistTrainer = Trainer.builder()
                 .setLossFunction(CE)
-                .setOptimizer(new Adam())
+                .setOptimizer(new SGD(0.001))
                 .setDataset(mnistDataset)
                 .setEpoch(1)
                 .setBatchSize(2_500)
@@ -44,6 +45,7 @@ public class Instancier {
                 .train(mnistTrainer);
 
         mnistMLP.serialize("mnistTest_1epoch_ADAM");
+
 
       //  MLP mnistMLP = MLP.importModel("mnistTest");
         Evaluation eval = mnistTrainer.evaluate(mnistMLP);
@@ -64,6 +66,29 @@ public class Instancier {
 
         }
 
+        /**
+         * COMPARAISON ADAM ET SGD :
+         *
+         * Adam :
+         *
+         * Accuracy : 87.878 %
+         * Precision : 0.3939
+         * Recall : 0.3939
+         * f1Score : 0.39390000000000003
+         *
+         * Temps d'entraînement : 59 secondes.
+         *
+         * ******************************
+         *
+         * SGD :
+         *
+         * Accuracy : 82.056 %
+         * 
+         * Precision : 0.1028
+         * Recall : 0.1028
+         * f1Score : 0.1028
+         * Temps d'entraînement : 56 secondes.
+         */
 
     }
 
