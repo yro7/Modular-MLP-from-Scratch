@@ -11,4 +11,8 @@ public class Utils {
         }
         return maxIndex;
     }
+
+    public static double[][] zeroArray(int numberOfRows, int numberOfColumns) {
+        return new double[numberOfRows][numberOfColumns];
+    }
 }

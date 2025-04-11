@@ -3,10 +3,10 @@ package MLP;
 import Function.LossFunction;
 import MLP.Data.LabeledDataset;
 import MLP.Data.Loaders.Dataloader;
+import MLP.Optimizers.Optimizer;
 import Matrices.ActivationMatrix;
 
 import static MLP.Data.Loaders.Dataloader.LabeledBatch;
-import static MLP.MLP.FeedForwardResult;
 
 /**
  * Représente l'objet permettant d'entraîner un modèle.
