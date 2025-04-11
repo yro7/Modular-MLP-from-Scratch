@@ -1,22 +1,20 @@
 package MLP.MNIST;
 
 
-import MLP.Data.LabeledDataset;
 import MLP.Data.Loaders.Dataloader;
 import MLP.MLP;
+import MLP.Optimizers.Adam;
+import MLP.Optimizers.SGD;
 import Matrices.ActivationMatrix;
 import MLP.Trainer;
-import MLP.Optimizer;
+import MLP.Optimizers.Optimizer;
 import MLP.Classification;
 import Matrices.Utils;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import static Function.ActivationFunction.*;
 import static Function.LossFunction.*;
-import static MLP.MNIST.MnistDataset.*;
 import static MLP.Trainer.Evaluation;
 import static MLP.MLP.FeedForwardResult;
 
@@ -31,10 +29,10 @@ public class Instancier {
         // Construction du trainer
         Trainer mnistTrainer = Trainer.builder()
                 .setLossFunction(CE)
-                .setOptimizer(new Optimizer(1))
+                .setOptimizer(new Adam())
                 .setDataset(mnistDataset)
-                .setEpoch(3)
-                .setBatchSize(10_000)
+                .setEpoch(1)
+                .setBatchSize(2_500)
                 .build();
 
         MLP mnistMLP = MLP.builder(784)
@@ -45,7 +43,7 @@ public class Instancier {
                 .build()
                 .train(mnistTrainer);
 
-        mnistMLP.serialize("mnistTest_3epoch");
+        mnistMLP.serialize("mnistTest_1epoch_ADAM");
 
       //  MLP mnistMLP = MLP.importModel("mnistTest");
         Evaluation eval = mnistTrainer.evaluate(mnistMLP);
@@ -56,7 +54,7 @@ public class Instancier {
 
         for(int i = 0; i < 99; i++){
             ActivationMatrix batchCaca = mnistDataset.trainDataLoader.objects_To_Batch(List.of(t.get(i).getInput()));
-            batchCaca.printDimensions("caca");
+            batchCaca.printDimensions("dzdz");
             FeedForwardResult result = mnistMLP.feedForward(batchCaca);
 
             int pred = Utils.argmax(result.getNetworkOutput().getData()[0]);

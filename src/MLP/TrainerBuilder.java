@@ -1,7 +1,7 @@
 package MLP;
 import Function.LossFunction;
 import MLP.Data.LabeledDataset;
-import MLP.Data.Loaders.Dataloader;
+import MLP.Optimizers.Optimizer;
 
 /**
  * Permet de créer facilement un Trainer.

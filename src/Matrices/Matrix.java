@@ -15,7 +15,7 @@ import java.util.function.Function;
  * - Opération intermédiaire : Retourne un objet permettant de continuer les opérations (method chaining)
  * - Opération terminale : Retourne une valeur finale et termine la chaîne d'opérations
  */
-public abstract class Matrix<T extends Matrix<T>> implements Cloneable{
+public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
 
     double[][] data;
 
@@ -186,7 +186,7 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable{
      * @immutable Ne modifie pas la matrice actuelle
      * @intermédiaire Renvoie une nouvelle matrice pour permettre le chaînage
      */
-    public T clone(){
+    public T clone() {
         T res = this.createInstance(this.getNumberOfRows(), this.getNumberOfColumns());
         res.data = double2DArrayDeepCopy(this.getData());
         return res;
@@ -254,23 +254,28 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable{
      * @immutable Ne modifie pas la matrice actuelle
      * @intermédiaire Renvoie une nouvelle matrice pour permettre le chaînage
      */
-    public T multiply(Matrix<?> matrix){
-        assert(this.getNumberOfColumns() == matrix.getNumberOfRows()) : "Matrices incompatibles pour un produit AxB :"
-                + " Nombre de colonnes de A : " + this.getNumberOfColumns()
-                + " Nombre de lignes de B : " + matrix.getNumberOfRows();
-        int newNumberOfRows = this.getNumberOfRows();
-        int newNumberOfColumns = matrix.getNumberOfColumns();
+    public T multiply(Matrix<?> matrix) {
+        final double[][] aData = this.data;
+        final double[][] bData = matrix.data;
+        final int rows = this.getNumberOfRows();
+        final int cols = matrix.getNumberOfColumns();
+        final int shared = this.getNumberOfColumns();
 
-        T newMatrix = createInstance(newNumberOfRows, newNumberOfColumns);
-        newMatrix.applyToElements((i, j) -> {
-            double sum = 0;
-            for(int k = 0; k < this.getNumberOfColumns(); k++){
-                sum += this.getData()[i][k] * matrix.getData()[k][j];
+        T res = createInstance(rows, cols);
+
+        for (int i = 0; i < rows; i++) {
+            double[] aRow = aData[i];
+            double[] resultRow = res.getData()[i];
+            for (int j = 0; j < cols; j++) {
+                double sum = 0;
+                for (int k = 0; k < shared; k++) {
+                    sum += aRow[k] * bData[k][j];
+                }
+                resultRow[j] = sum;
             }
-            newMatrix.data[i][j] = sum;
-        });
+        }
 
-        return newMatrix;
+        return res;
     }
 
     /**
@@ -542,6 +547,30 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable{
         return this.applyFunction(d -> Math.pow(d,2));
     }
 
+
+    /**
+     * Élève à la puissance t chaque élément de la matrice.
+     *
+     * @return La matrice modifiée
+     * @mutable Cette méthode modifie la matrice actuelle
+     * @intermédiaire Renvoie this pour permettre le chaînage
+     */
+    public T power(int t){
+        return this.applyFunction(d -> Math.pow(d,t));
+    }
+    /**
+     * Élève à la puissance 1/2 (racine carrée) chaque élément de la matrice.
+     *
+     * @return La matrice modifiée
+     * @mutable Cette méthode modifie la matrice actuelle
+     * @intermédiaire Renvoie this pour permettre le chaînage
+     */
+    public Matrix<?> sqrt() {
+        this.applyFunction(Math::sqrt);
+        return self();
+    }
+
+
     /**
      * Multiplie chaque élément de la matrice par un scalaire.
      *
@@ -681,4 +710,8 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable{
         return res[0];
     }
 
+    public static Matrix<?> zeroMatrix(int numberOfRows, int numberOfColumns) {
+        double[][] zeroArray = new double[numberOfRows][numberOfColumns];
+        return new GradientMatrix(zeroArray);
+    }
 }

@@ -17,6 +17,7 @@ public class GradientMatrix extends Matrix<GradientMatrix> {
         super(data);
     }
 
+
     @Override
     protected GradientMatrix createInstance(int rows, int cols) {
         return new GradientMatrix(rows, cols);

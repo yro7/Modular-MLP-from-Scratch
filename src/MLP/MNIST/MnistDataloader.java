@@ -59,6 +59,7 @@ public class MnistDataloader extends Dataloader<MnistImage, Classification> {
 
     /**
      * Loads a single image and its label from the MNIST dataset
+     * // TODO fix ça pour load toute la batch à la fois plutot qu'1 image par 1 image (lent)
      */
     private LabeledDataSample<MnistImage, Classification> loadSingleImage(int index) {
         try {

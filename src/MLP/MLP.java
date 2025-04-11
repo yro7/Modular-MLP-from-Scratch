@@ -1,13 +1,13 @@
 package MLP;
 
 import Function.LossFunction;
+import MLP.Optimizers.Optimizer;
 import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
 import Matrices.GradientMatrix;
 import Matrices.WeightMatrix;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +89,8 @@ public class MLP implements Serializable {
      */
     public void updateParameters(ActivationMatrix input, ActivationMatrix expectedOutput,
                                  LossFunction lossFunction, Optimizer optimizer){
-        optimizer.updateParameters(input, expectedOutput, lossFunction, this);
+
+        optimizer.updateParametersBody(input, expectedOutput, lossFunction, this);
 
     }
 
@@ -100,8 +101,8 @@ public class MLP implements Serializable {
      * @param lossFunction
      * @return
      */
-    public List<Pair<GradientMatrix,BiasVector>> backpropagate(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction) {
-        List<Pair<GradientMatrix,BiasVector>> gradients = new ArrayList<>();
+    public BackProResult backpropagate(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction) {
+        BackProResult gradients = new BackProResult();
         FeedForwardResult activations = this.feedForward(input);
         int L = layers.size();
         ActivationMatrix a_L = activations.getNetworkOutput(); // Activations de la dernière couche APRES fonction d'activation
@@ -121,7 +122,7 @@ public class MLP implements Serializable {
         GradientMatrix dL_dW_L = delta_L.multiplyAtRight(a_L_minus_1.transpose());
 
         BiasVector dL_db_L = delta_L.sumErrorTerm();
-        gradients.addFirst(new Pair<>(dL_dW_L, dL_db_L));
+        gradients.add(dL_dW_L, dL_db_L);
 
         // Rétropropagation à travers les couches cachées
         GradientMatrix delta_l_plus_1 = delta_L;
@@ -143,10 +144,10 @@ public class MLP implements Serializable {
                     .hadamardProduct(sigma_prime_z_l);
 
             // Finalement : calcul du gradient des poids et du biais
-            GradientMatrix dl_dW_l = delta_l.multiplyAtRight(a_l_minus_1.transpose());
+            GradientMatrix dL_dW_l = delta_l.multiplyAtRight(a_l_minus_1.transpose());
             BiasVector dL_db_l = delta_l.sumErrorTerm();
 
-            gradients.addFirst(new Pair<>(dl_dW_l, dL_db_l));
+            gradients.add(dL_dW_l, dL_db_l);
             delta_l_plus_1 = delta_l;
 
         }
@@ -350,5 +351,67 @@ public class MLP implements Serializable {
             return this.results.getLast().getB();
         }
     }
+
+    /**
+     * Encapsule simplement les résultats de {@link #backpropagate} du réseau
+     * pour des notations plus compactes
+     * Permet de récupérer une {@link GradientMatrix} qui correspond au gradient de poids
+     * et un {@link BiasVector} qui correspond au gradient de biais
+     */
+    public static class BackProResult {
+
+        List<Pair<GradientMatrix, BiasVector>> results;
+
+        public BackProResult() {
+            this.results = new ArrayList<>();
+        }
+
+        /**
+         * Renvoie la {@link GradientMatrix} de la couche n°i du MLP.
+         * @param i
+         * @return
+         */
+        public GradientMatrix getWeightGradient(int i) {
+            return this.results.get(i).getA();
+        }
+
+        public BackProResult(List<Pair<GradientMatrix, BiasVector>> results) {
+            this.results = results;
+        }
+
+        /**
+         * Renvoie le {@link BiasVector} de la couche n°i du MLP.
+         * @param i
+         * @return
+         */
+        public BiasVector getBiasGradient(int i) {
+            return this.results.get(i).getB();
+        }
+
+        public void add(GradientMatrix weightGradientOfLayer, BiasVector biasGradientOfLayer) {
+            this.results.addFirst(new Pair<>(weightGradientOfLayer, biasGradientOfLayer));
+        }
+
+        /**
+         * Renvoie la matrice de gradient des poids de la dernière couche du réseau.
+         * @return
+         */
+        public GradientMatrix getLastWeightGradient() {
+            return this.results.getLast().getA();
+        }
+
+        /**
+         * Renvoie le vecteur de gradient des biais de la dernière couche du réseau.
+         * @return
+         */
+        public BiasVector getLastBiasGradient() {
+            return this.results.getLast().getB();
+        }
+
+        public int size() {
+            return this.results.size();
+        }
+    }
+
 
 }
