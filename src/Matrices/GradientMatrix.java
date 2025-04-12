@@ -39,4 +39,5 @@ public class GradientMatrix extends Matrix<GradientMatrix> {
         return new BiasVector(biasVectorData);
     }
 
+
 }

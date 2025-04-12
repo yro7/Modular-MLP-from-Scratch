@@ -5,6 +5,7 @@ import MLP.Data.Loaders.Dataloader;
 import MLP.MLP;
 import MLP.Optimizers.Adam;
 import MLP.Optimizers.SGD;
+import MLP.Regularizations.ParameterRegularization;
 import Matrices.ActivationMatrix;
 import MLP.Trainer;
 import MLP.Optimizers.Optimizer;
@@ -13,6 +14,7 @@ import Matrices.Utils;
 
 import java.util.List;
 
+import static MLP.Regularizations.ParameterRegularization.ElasticNet;
 import static Function.ActivationFunction.*;
 import static Function.LossFunction.*;
 import static MLP.Trainer.Evaluation;
@@ -30,21 +32,24 @@ public class Instancier {
         // Construction du trainer
         Trainer mnistTrainer = Trainer.builder()
                 .setLossFunction(CE)
-                .setOptimizer(new SGD(0.001))
+                .setOptimizer(new Adam())
                 .setDataset(mnistDataset)
                 .setEpoch(1)
-                .setBatchSize(2_500)
+                .setParameterRegularization(new ElasticNet(1e-4, 1e-3))
+                .setBatchSize(2000)
                 .build();
 
+        // Accuracy : 0.8196 sans Elastic net
+        // Accuracy : avec Elastic net
         MLP mnistMLP = MLP.builder(784)
-                .setRandomSeed(420)
+                .setRandomSeed(13)
                 .addLayer(256, ReLU)
                 .addLayer(128, ReLU)
                 .addLayer(10, SoftMax)
                 .build()
                 .train(mnistTrainer);
 
-        mnistMLP.serialize("mnistTest_1epoch_ADAM");
+       // mnistMLP.serialize("mnistTest_1epoch_ADAM");
 
 
       //  MLP mnistMLP = MLP.importModel("mnistTest");

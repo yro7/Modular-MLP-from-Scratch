@@ -274,6 +274,7 @@ public class MatrixTest {
 
     @Test
     public void testMultiplyScalar() {
+
         Matrix<?> result = matrixA.clone().multiply(2.0);
 
         // Vérifier quelques valeurs
@@ -283,6 +284,9 @@ public class MatrixTest {
         assertEquals(8.0, result.getData()[1][0], 1e-9);   // 4 * 2
         assertEquals(10.0, result.getData()[1][1], 1e-9);  // 5 * 2
         assertEquals(12.0, result.getData()[1][2], 1e-9);  // 6 * 2
+
+
+
     }
 
     @Test

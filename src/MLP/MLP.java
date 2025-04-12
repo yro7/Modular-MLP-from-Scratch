@@ -2,6 +2,7 @@ package MLP;
 
 import Function.LossFunction;
 import MLP.Optimizers.Optimizer;
+import MLP.Regularizations.ParameterRegularization;
 import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
 import Matrices.GradientMatrix;
@@ -10,6 +11,7 @@ import Matrices.WeightMatrix;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static Function.ActivationFunction.SoftMax;
 import static Function.LossFunction.CE;
@@ -88,9 +90,9 @@ public class MLP implements Serializable {
      * @param optimizer
      */
     public void updateParameters(ActivationMatrix input, ActivationMatrix expectedOutput,
-                                 LossFunction lossFunction, Optimizer optimizer){
+                                 LossFunction lossFunction, Optimizer optimizer, ParameterRegularization regularization){
 
-        optimizer.updateParametersBody(input, expectedOutput, lossFunction, this);
+        optimizer.updateParametersBody(input, expectedOutput, lossFunction, this, regularization);
 
     }
 
@@ -101,7 +103,8 @@ public class MLP implements Serializable {
      * @param lossFunction
      * @return
      */
-    public BackProResult backpropagate(ActivationMatrix input, ActivationMatrix expectedOutput, LossFunction lossFunction) {
+    public BackProResult backpropagate(ActivationMatrix input, ActivationMatrix expectedOutput,
+                                       LossFunction lossFunction, ParameterRegularization parameterRegularization) {
         BackProResult gradients = new BackProResult();
         FeedForwardResult activations = this.feedForward(input);
         int L = layers.size();
@@ -115,7 +118,7 @@ public class MLP implements Serializable {
                 expectedOutput.getNumberOfRows(), expectedOutput.getNumberOfColumns());
 
 
-        GradientMatrix delta_L = this.computeOutputGradient(lossFunction, expectedOutput, a_L, z_L);
+        GradientMatrix delta_L = this.computeOutputGradient(lossFunction, expectedOutput, a_L, z_L, parameterRegularization);
 
         // Calcul des gradients pour la couche de sortie
         ActivationMatrix a_L_minus_1 = (L-1 > 0) ? activations.getResult_PostAF(L-2) : input;
@@ -147,6 +150,9 @@ public class MLP implements Serializable {
             GradientMatrix dL_dW_l = delta_l.multiplyAtRight(a_l_minus_1.transpose());
             BiasVector dL_db_l = delta_l.sumErrorTerm();
 
+            // Application de la régularization en fonction des paramètres, sur les gradients calculés
+            if(parameterRegularization != null) parameterRegularization.accept(dL_dW_l, layer_l.getWeightMatrix());
+
             gradients.add(dL_dW_l, dL_db_l);
             delta_l_plus_1 = delta_l;
 
@@ -157,20 +163,24 @@ public class MLP implements Serializable {
     }
 
     private GradientMatrix computeOutputGradient(LossFunction lossFunction, ActivationMatrix expectedOutput,
-                                                 ActivationMatrix a_L, ActivationMatrix z_L) {
+                                                 ActivationMatrix a_L, ActivationMatrix z_L, ParameterRegularization regularization) {
 
         GradientMatrix delta_L;
 
         // Cas spécial pour Softmax + Entropie croisée
-                              // TODO factorizer cette immondice
+        // Pour Softmax avec CE, delta_L est simplement (a_L - expected)
+
         if (getLastLayer().getActivationFunction() == SoftMax && lossFunction instanceof CE) {
-            // Pour Softmax avec CE, delta_L est simplement (a_L - expected)
             delta_L = a_L.substract(expectedOutput).toGradientMatrix();
-        } else {
+
+            // TODO verifier que ça marche
+            if(regularization != null) delta_L.add(regularization.computePenalty(this));
             // Calcul standard pour les autres AF:
+        } else {
 
             // Calcul de dL/da_L [sortie attendue]
             GradientMatrix dL_da_L = lossFunction.applyDerivative(a_L, expectedOutput);
+            if(regularization != null) dL_da_L.add(regularization.computePenalty(this));
             // Calcul de σ'(z_L)
             ActivationMatrix sigma_prime_z_L = getLastLayer().getDerivativeOfAF().apply(z_L);
             //  dL/da_L ⊙ σ'(z_L)
@@ -411,6 +421,24 @@ public class MLP implements Serializable {
         public int size() {
             return this.results.size();
         }
+    }
+
+
+    public double getWeightsNorm(){
+        return mapWeightsToDouble(Math::abs);
+    }
+
+    public double getWeightsSignum(){
+        return mapWeightsToDouble(Math::signum);
+    }
+
+    public double mapWeightsToDouble(Function<Double,Double> map){
+        double[] res = {0};
+        for(Layer l : getLayers()) {
+            l.getWeightMatrix().forEach(d -> res[0] += Math.signum(d));
+        }
+
+        return res[0];
     }
 
 
