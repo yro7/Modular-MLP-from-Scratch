@@ -23,7 +23,10 @@ public class Adam extends Optimizer {
     public final double beta1;
     public final double beta2;
 
-    public static final double epsilon = 1e-16;
+    /**
+     * Utilisé pour éviter la division par 0. 1e-8 comme dans l'article introduisant Adam.
+     */
+    public static final double epsilon = 1e-8;
 
     /**
      * Représente à quelle itération l'optimiseur est
@@ -92,7 +95,8 @@ public class Adam extends Optimizer {
 
             GradientMatrix weightGradient = gradients.getWeightGradient(i);
             BiasVector biasGradient = gradients.getBiasGradient(i);
-
+ // TODO faire que des opérations in-place
+            // TODO implémenter l'initialization bias correction
 
             // m_t = b1*m_t-1 + (1-b1)*gt
             updateMomentum(firstOrderMomentsWeights[i], weightGradient, beta1);
@@ -104,12 +108,16 @@ public class Adam extends Optimizer {
             // Calcule la correction finale. Nécessaire de cloner pour éviter
             // de modifier les moments précédemment calculés.
             weightCorrections[i] = firstOrderMomentsWeights[i].clone()
+                    // Bias correction: m_t/(1-beta1^t)
+                    .divide(1-Math.pow(beta1, iteration))
                     .multiply(learningRate)
                     .hadamardQuotient(
                             secondOrderMomentsWeights[i].clone().sqrt().add(epsilon)
                     );
 
             biasCorrections[i] = firstOrderMomentsBias[i].clone()
+                    // Bias correction: v_t/(1-beta^t)
+                    .divide(1-Math.pow(beta1, iteration))
                     .multiply(learningRate)
                     .hadamardQuotient(
                             secondOrderMomentsBias[i].clone().sqrt().add(epsilon)
@@ -185,9 +193,7 @@ public class Adam extends Optimizer {
 
         // Mets à jour le moment: m_t = beta*m_{t-1} + (1-beta)*g_t
         momentum.multiply(beta)
-                .add(gradientCopy.multiply(1-beta))
-                // Bias correction: m_t/(1-beta^t)
-                .divide(1-Math.pow(beta, iteration));
+                .add(gradientCopy.multiply(1-beta));
     }
 
 
