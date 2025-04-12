@@ -4,6 +4,7 @@ import Function.LossFunction;
 import MLP.Data.LabeledDataset;
 import MLP.Data.Loaders.Dataloader;
 import MLP.Optimizers.Optimizer;
+import MLP.Regularizations.ParameterRegularization;
 import Matrices.ActivationMatrix;
 
 import static MLP.Data.Loaders.Dataloader.LabeledBatch;
@@ -30,6 +31,11 @@ public class Trainer {
 
     /** Lossfunction utilisée sur la sortie du réseau**/
     public LossFunction lossFunction;
+
+    /**
+     * Régularisation appliquée en sortie du réseau et lors du calcul des gradients (backprop)
+     */
+    public ParameterRegularization parameterRegularization;
 
     /** TRUE Si l'entraînement communique l'évolution de sa loss au cours des epoch.
      * Dans ce cas-là, le modèle sera confronté à l'ensemble de test à la fin de chaque epoch.
@@ -68,6 +74,10 @@ public class Trainer {
      **/
     public void train(MLP mlp) {
         System.out.println("Début de l'entraînement du MLP.");
+
+        System.out.println("Optimizer : " + this.optimizer);
+        System.out.println("Régularisation paramètres : " + this.parameterRegularization);
+
         System.out.println("Number of Epochs : " + this.numberOfEpochs());
         System.out.println("batch size : " + this.batchSize);
 
@@ -87,7 +97,7 @@ public class Trainer {
             for(int j = 0; j < this.getTrainingData().getNumberOfBatches(); j++) {
                 System.out.println("Epoch n°" + i + ", Batch n°" + j);
                 LabeledBatch batch = this.getTrainingData().getBatch(j);
-                mlp.updateParameters(batch.getInput(), batch.getOutput(), this.getLossFunction(), this.getOptimizer());
+                mlp.updateParameters(batch.getInput(), batch.getOutput(), this.getLossFunction(), this.getOptimizer(), this.parameterRegularization);
                 if(verbose) {
                     Evaluation evaluation = this.evaluate(mlp);
                     System.out.print("  "); evaluation.print();

@@ -2,6 +2,7 @@ package MLP;
 import Function.LossFunction;
 import MLP.Data.LabeledDataset;
 import MLP.Optimizers.Optimizer;
+import MLP.Regularizations.ParameterRegularization;
 
 /**
  * Permet de créer facilement un Trainer.
@@ -36,6 +37,11 @@ public class TrainerBuilder {
 
     public TrainerBuilder setEpoch(int numberOfEpochs){
         this.product.epochs = numberOfEpochs;
+        return this;
+    }
+
+    public TrainerBuilder setParameterRegularization(ParameterRegularization parameterRegularization) {
+        this.product.parameterRegularization = parameterRegularization;
         return this;
     }
 
@@ -74,7 +80,9 @@ public class TrainerBuilder {
         return (this.product.optimizer != null);
     }
 
-
+    private boolean hasParameterRegularization() {
+        return this.product.parameterRegularization != null;
+    }
 
 
 

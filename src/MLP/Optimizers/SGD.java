@@ -1,23 +1,9 @@
 package MLP.Optimizers;
 
-import Function.LossFunction;
 import MLP.MLP;
-import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
 import Matrices.GradientMatrix;
 
-import java.util.List;
-
-import static Function.ActivationFunction.SoftMax;
-import static Function.LossFunction.CE;
-import Matrices.BiasVector;
-import Matrices.GradientMatrix;
-
-import java.util.List;
-
-import static Function.ActivationFunction.SoftMax;
-import static Function.LossFunction.CE;
-import MLP.Pair;
 import MLP.Layer;
 import static MLP.MLP.BackProResult;
 
@@ -45,6 +31,7 @@ public class SGD extends Optimizer {
             BiasVector biasGradient = gradients.getBiasGradient(l).multiply(learningRate);
 
             Layer layer = mlp.getLayer(l);
+
             layer.getWeightMatrix().substract(weightCorrection);
             layer.getBiasVector().substract(biasGradient);
         }

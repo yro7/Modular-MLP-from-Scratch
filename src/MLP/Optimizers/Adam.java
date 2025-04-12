@@ -55,6 +55,13 @@ public class Adam extends Optimizer {
     public BackProResult lastGradients;
 
     /**
+     * Garde en mémoire beta1^t et le multiplie par beta1 à chaque itération,
+     * pour éviter de recalculer le beta1^t chaque fois.
+     */
+    public double beta1_t;
+    public double beta2_t;
+
+    /**
      *
      */
     public Adam(double learningRate, double beta1, double beta2) {
@@ -65,6 +72,8 @@ public class Adam extends Optimizer {
         this.learningRate = learningRate;
         this.beta1 = beta1;
         this.beta2 = beta2;
+        this.beta1_t = beta1;
+        this.beta2_t = beta2;
         this.iteration = 0;
         this.firstOrderMomentsWeights = null;
         this.secondOrderMomentsWeights = null;
@@ -95,33 +104,42 @@ public class Adam extends Optimizer {
 
             GradientMatrix weightGradient = gradients.getWeightGradient(i);
             BiasVector biasGradient = gradients.getBiasGradient(i);
- // TODO faire que des opérations in-place
-            // TODO implémenter l'initialization bias correction
 
             // m_t = b1*m_t-1 + (1-b1)*gt
+            // Mettre à jour les moments de 1er & 2nd ordre, pour les poids et les biais.
             updateMomentum(firstOrderMomentsWeights[i], weightGradient, beta1);
             updateMomentum(secondOrderMomentsWeights[i], weightGradient, beta2);
 
             updateMomentum(firstOrderMomentsBias[i], biasGradient, beta1);
             updateMomentum(secondOrderMomentsBias[i], biasGradient, beta2);
 
-            // Calcule la correction finale. Nécessaire de cloner pour éviter
-            // de modifier les moments précédemment calculés.
-            weightCorrections[i] = firstOrderMomentsWeights[i].clone()
-                    // Bias correction: m_t/(1-beta1^t)
-                    .divide(1-Math.pow(beta1, iteration))
-                    .multiply(learningRate)
-                    .hadamardQuotient(
-                            secondOrderMomentsWeights[i].clone().sqrt().add(epsilon)
-                    );
 
-            biasCorrections[i] = firstOrderMomentsBias[i].clone()
-                    // Bias correction: v_t/(1-beta^t)
-                    .divide(1-Math.pow(beta1, iteration))
-                    .multiply(learningRate)
-                    .hadamardQuotient(
-                            secondOrderMomentsBias[i].clone().sqrt().add(epsilon)
-                    );
+            this.beta1_t *= beta1;
+            this.beta2_t *= beta2;
+
+            // Compute bias-corrected first/second moment estimate pour les poids
+            GradientMatrix firstOrderMomentsWeightsCorrected =
+                    firstOrderMomentsWeights[i].clone()
+                            .divide(1-beta1_t);
+            GradientMatrix secondOrderMomentsWeightsCorrected =
+                    secondOrderMomentsWeights[i].clone()
+                            .divide(1-beta2_t);
+
+            // Compute bias-corrected first/second moment estimate pour els biais
+            BiasVector firstOrderMomentsBiasCorrected =
+                    firstOrderMomentsBias[i].clone()
+                            .divide(1-beta1_t);
+            BiasVector secondOrderMomentsBiasCorrected =
+                    secondOrderMomentsBias[i].clone()
+                            .divide(1-beta2_t);
+
+            // Calcule la correction finale pour les poids et biais
+            weightCorrections[i] = firstOrderMomentsWeightsCorrected.multiply(learningRate)
+                    .hadamardQuotient(secondOrderMomentsWeightsCorrected.sqrt().add(epsilon));
+            biasCorrections[i] = firstOrderMomentsBiasCorrected.multiply(learningRate)
+                    .hadamardQuotient(secondOrderMomentsBiasCorrected.sqrt().add(epsilon));
+
+
 
         }
 
@@ -162,6 +180,7 @@ public class Adam extends Optimizer {
             ));
             // Initialize bias moments
             BiasVector biasGradient = gradients.getBiasGradient(i);
+
             this.firstOrderMomentsBias[i] = new BiasVector(Utils.zeroArray(
                     1,
                     biasGradient.getNumberOfColumns()
@@ -184,16 +203,18 @@ public class Adam extends Optimizer {
      * @param beta The decay rate (beta1 for first-order, beta2 for second-order)
      */
     public void updateMomentum(Matrix<?> momentum, Matrix<?> gradient, double beta) {
-        Matrix<?> gradientCopy = gradient.clone();
 
-        // Si on update la variance, mettre au carré le clone
+        // Multiplier le moment par beta
+        momentum.multiply(beta);
+
+        // Si on update la variance, multiplier par le carré du gradient
         if(beta == beta2) {
-            gradientCopy.square();
+            momentum.addMultipliedMatrix(gradient.clone().square(), (1-beta));
         }
 
-        // Mets à jour le moment: m_t = beta*m_{t-1} + (1-beta)*g_t
-        momentum.multiply(beta)
-                .add(gradientCopy.multiply(1-beta));
+        // Sinon, multiplier par le gradient
+        // Mettre à jour le moment: m_t = beta*m_{t-1} + (1-beta)*g_t
+        momentum.addMultipliedMatrix(gradient, (1-beta));
     }
 
 

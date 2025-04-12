@@ -132,6 +132,38 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
         return new GradientMatrix(this.data);
     }
 
+
+    /**
+     * Additionne une autre matrice à celle-ci élément par élément.
+     *
+     * @param matrix La matrice à additionner
+     * @return La matrice modifiée
+     * @throws AssertionError si les dimensions ne correspondent pas
+     * @mutable Cette méthode modifie la matrice actuelle
+     * @intermédiaire Renvoie this pour permettre le chaînage
+     */
+    public T add(Matrix<?> matrix){
+        verifyDimensions(matrix);
+        return elementWiseOperation(Double::sum, matrix);
+    }
+
+    /**
+     * Calcule A += B*scalar.
+     * Additionne une autre matrice à celle-ci élément par élément, en multipliant les éléments de l'autre matrice par un scalaire.
+     * Equivaut à A.add(B.clone.multiply(scalar)).
+     * @param matrice La matrice à additionner
+     * @return La matrice modifiée
+     * @throws AssertionError si les dimensions ne correspondent pas
+     * @mutable Cette méthode modifie la matrice actuelle
+     * @immutable_argument Cette méthode ne modifie pas la matrice passée en argument.
+     * @intermédiaire Renvoie this pour permettre le chaînage
+     */
+    public T addMultipliedMatrix(Matrix<?> matrice, double scalar) {
+        verifyDimensions(matrice);
+        applyToElements((i,j) -> this.data[i][j] += matrice.getData(i,j)*scalar);
+        return self();
+    }
+
     /**
      * Interface fonctionnelle définissant une opération sur les indices d'une matrice.
      */
@@ -255,6 +287,9 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
      * @intermédiaire Renvoie une nouvelle matrice pour permettre le chaînage
      */
     public T multiply(Matrix<?> matrix) {
+
+        assert(this.getNumberOfColumns() == matrix.getNumberOfRows()) : "Produit matriciel incompatible," +
+                "le nombre de colonnes de A devrait être égal au nombre de lignes de B.";
         final double[][] aData = this.data;
         final double[][] bData = matrix.data;
         final int rows = this.getNumberOfRows();
@@ -277,6 +312,9 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
 
         return res;
     }
+
+
+
 
     /**
      * Calcule le produit matriciel BxA où A est cette matrice et B est la matrice en paramètre.
@@ -389,19 +427,6 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
         return elementWiseOperation((d1,d2) -> d1 - d2, matrix);
     }
 
-    /**
-     * Additionne une autre matrice à celle-ci élément par élément.
-     *
-     * @param matrix La matrice à additionner
-     * @return La matrice modifiée
-     * @throws AssertionError si les dimensions ne correspondent pas
-     * @mutable Cette méthode modifie la matrice actuelle
-     * @intermédiaire Renvoie this pour permettre le chaînage
-     */
-    public T add(Matrix<?> matrix){
-        verifyDimensions(matrix);
-        return elementWiseOperation(Double::sum, matrix);
-    }
 
     /**
      * Ajoute un scalaire à chaque élément de la matrice.
@@ -713,5 +738,43 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
     public static Matrix<?> zeroMatrix(int numberOfRows, int numberOfColumns) {
         double[][] zeroArray = new double[numberOfRows][numberOfColumns];
         return new GradientMatrix(zeroArray);
+    }
+
+    /**
+     * Calcule le produit matriciel AxB^2 où A est cette matrice et B est la matrice en paramètre.
+     * Equivaut à
+     *
+     * a.multiply(b.clone.square))
+     *
+     * mais permet d'éviter le clonage de B.
+     *
+     * @param matrix La matrice B à multiplier à droite
+     * @return Une nouvelle matrice résultant du produit
+     * @throws AssertionError si les dimensions sont incompatibles
+     * @immutable Ne modifie pas la matrice actuelle, ni la matrice argument.
+     * @intermédiaire Renvoie une nouvelle matrice pour permettre le chaînage
+     */
+    public T multiplyBySquare(Matrix<?> matrix) {
+        final double[][] aData = this.data;
+        final double[][] bData = matrix.data;
+        final int rows = this.getNumberOfRows();
+        final int cols = matrix.getNumberOfColumns();
+        final int shared = this.getNumberOfColumns();
+
+        T res = createInstance(rows, cols);
+
+        for (int i = 0; i < rows; i++) {
+            double[] aRow = aData[i];
+            double[] resultRow = res.getData()[i];
+            for (int j = 0; j < cols; j++) {
+                double sum = 0;
+                for (int k = 0; k < shared; k++) {
+                    sum += aRow[k] * Math.pow(bData[k][j],2);
+                }
+                resultRow[j] = sum;
+            }
+        }
+
+        return res;
     }
 }

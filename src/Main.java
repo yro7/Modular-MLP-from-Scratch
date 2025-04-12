@@ -1,5 +1,6 @@
 import MLP.MLP;
 import MLP.Optimizers.SGD;
+import MLP.Regularizations.ParameterRegularization;
 import Matrices.*;
 
 import static Function.ActivationFunction.*;
@@ -39,7 +40,7 @@ public class Main {
         ActivationMatrix batchTheorique = new ActivationMatrix(xorResult);
 
         for(int i = 0; i < 10000; i++){
-            mlp.updateParameters(batchInput, batchTheorique, MSE, new SGD(0.1));
+            mlp.updateParameters(batchInput, batchTheorique, MSE, new SGD(0.1), new ParameterRegularization.L1(0.1));
             if(i % 100 == 0) printLoss(mlp, batchInput, batchTheorique);
         }
 

@@ -145,24 +145,6 @@ public interface LossFunction extends BiFunction<ActivationMatrix, ActivationMat
             @Override
             public GradientMatrix applyDerivative(ActivationMatrix y_pred, ActivationMatrix y_true) {
                 return y_pred.substract(y_true).toGradientMatrix();
-              /**  ActivationMatrix result = y_pred.clone();
-                // Initialiser tous les éléments à 0
-                for (int i = 0; i < result.getData().length; i++) {
-                    for (int j = 0; j < result.getData()[i].length; j++) {
-                        result.getData()[i][j] = 0;
-                    }
-                }
-
-                // Calculer -y_true/y_pred/batchSize seulement où y_true > 0
-                for (int i = 0; i < y_true.getData().length; i++) {
-                    for (int j = 0; j < y_true.getData()[i].length; j++) {
-                        if (y_true.getData()[i][j] > 0) {
-                            result.getData()[i][j] = (-y_true.getData()[i][j] / y_pred.getData()[i][j]) / y_true.getBatchSize();
-                        }
-                    }
-                }
-
-                return result.toGradientMatrix();**/
             }
         }
 
