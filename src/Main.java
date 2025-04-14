@@ -1,4 +1,5 @@
 import MLP.MLP;
+import MLP.Optimizers.Adam;
 import MLP.Optimizers.SGD;
 import MLP.Regularizations.ParameterRegularization;
 import Matrices.*;
@@ -38,9 +39,13 @@ public class Main {
 
         ActivationMatrix batchInput = new ActivationMatrix(xorData);
         ActivationMatrix batchTheorique = new ActivationMatrix(xorResult);
+        Adam optimizer = new Adam();
 
+        SGD optimizer2 = new SGD(0.1);
         for(int i = 0; i < 10000; i++){
-            mlp.updateParameters(batchInput, batchTheorique, MSE, new SGD(0.1), new ParameterRegularization.L1(0.1));
+
+
+            mlp.updateParameters(batchInput, batchTheorique, MSE, optimizer, null);
             if(i % 100 == 0) printLoss(mlp, batchInput, batchTheorique);
         }
 

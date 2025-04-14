@@ -5,6 +5,10 @@ import Matrices.BiasVector;
 import Matrices.GradientMatrix;
 
 import MLP.Layer;
+import Matrices.Matrix;
+
+import java.util.List;
+
 import static MLP.MLP.BackProResult;
 
 /**
@@ -25,7 +29,6 @@ public class SGD extends Optimizer {
 
     @Override
     public void updateParameters(BackProResult gradients, MLP mlp) {
-
         for(int l = 0; l < mlp.getLayers().size(); l++ ) {
             GradientMatrix weightCorrection = gradients.getWeightGradient(l).multiply(learningRate);
             BiasVector biasGradient = gradients.getBiasGradient(l).multiply(learningRate);

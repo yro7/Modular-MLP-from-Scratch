@@ -8,6 +8,11 @@ import MLP.Layer;
 import Matrices.Matrix;
 import Matrices.Utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
 /**
  * Adaptive Moment Estimation
  * Voir <a href="https://arxiv.org/pdf/1412.6980">ADAM: A METHOD FOR STOCHASTIC OPTIMIZATION</a>.
@@ -26,7 +31,7 @@ public class Adam extends Optimizer {
     /**
      * Utilisé pour éviter la division par 0. 1e-8 comme dans l'article introduisant Adam.
      */
-    public static final double epsilon = 1e-8;
+    public static final double epsilon = 1;
 
     /**
      * Représente à quelle itération l'optimiseur est
@@ -62,12 +67,17 @@ public class Adam extends Optimizer {
     public double beta2_t;
 
     /**
+     * Stocke si ADAM a été initialisé ou pas;
+     */
+    public boolean initialized;
+
+    /**
      *
      */
     public Adam(double learningRate, double beta1, double beta2) {
-        assert(learningRate > 0): "Le learning rate devrait être strictement positif.";
-        assert(beta1 >= 0 && beta1 < 1) : "beta1 devrait appartenir à [0,1(.";
-        assert(beta2 > 0 && beta2 < 1) : "beta2 devrait appartenir à [0,1(.";
+    //    assert(learningRate > 0): "Le learning rate devrait être strictement positif.";
+     //   assert(beta1 >= 0 && beta1 < 1) : "beta1 devrait appartenir à [0,1(.";
+       // assert(beta2 > 0 && beta2 < 1) : "beta2 devrait appartenir à [0,1(.";
 
         this.learningRate = learningRate;
         this.beta1 = beta1;
@@ -79,6 +89,8 @@ public class Adam extends Optimizer {
         this.secondOrderMomentsWeights = null;
         this.firstOrderMomentsBias = null;
         this.secondOrderMomentsBias = null;
+        this.lastGradients = null;
+        this.initialized = false;
     }
 
     /**
@@ -93,7 +105,18 @@ public class Adam extends Optimizer {
 
     @Override
     public void updateParameters(BackProResult gradients, MLP mlp) {
-        if(lastGradients == null) initialize(gradients);
+
+
+        List<GradientMatrix> g = gradients.getGradients();
+
+        if(iteration < 3) System.out.println("iteration : " + iteration);
+
+        if(!initialized) initialize(gradients);
+
+        List<GradientMatrix> gClone = new ArrayList<>();
+        for(GradientMatrix gm : g) {
+            gClone.add(gm.clone());
+        }
 
         int size = gradients.size();
 
@@ -110,6 +133,8 @@ public class Adam extends Optimizer {
             updateMomentum(firstOrderMomentsWeights[i], weightGradient, beta1);
             updateMomentum(secondOrderMomentsWeights[i], weightGradient, beta2);
 
+
+
             updateMomentum(firstOrderMomentsBias[i], biasGradient, beta1);
             updateMomentum(secondOrderMomentsBias[i], biasGradient, beta2);
 
@@ -125,7 +150,8 @@ public class Adam extends Optimizer {
                     secondOrderMomentsWeights[i].clone()
                             .divide(1-beta2_t);
 
-            // Compute bias-corrected first/second moment estimate pour els biais
+
+            // Compute bias-corrected first/second moment estimate pour les biais
             BiasVector firstOrderMomentsBiasCorrected =
                     firstOrderMomentsBias[i].clone()
                             .divide(1-beta1_t);
@@ -133,14 +159,32 @@ public class Adam extends Optimizer {
                     secondOrderMomentsBias[i].clone()
                             .divide(1-beta2_t);
 
+            secondOrderMomentsWeightsCorrected.add(epsilon);
+            GradientMatrix nonNullMatrixZebi = secondOrderMomentsWeightsCorrected.sqrt().add(epsilon);
+            assert(!nonNullMatrixZebi.hasNullValues()) : "should have no null values";
+
             // Calcule la correction finale pour les poids et biais
             weightCorrections[i] = firstOrderMomentsWeightsCorrected.multiply(learningRate)
                     .hadamardQuotient(secondOrderMomentsWeightsCorrected.sqrt().add(epsilon));
             biasCorrections[i] = firstOrderMomentsBiasCorrected.multiply(learningRate)
                     .hadamardQuotient(secondOrderMomentsBiasCorrected.sqrt().add(epsilon));
 
+            if(iteration <3) System.out.println("weight correction : ");
+           if(iteration < 3) System.out.println(weightCorrections[0].getData()[0][0]);
 
 
+
+            for(int k = 0; k < gClone.size(); k++) {
+
+             /**   if(!gClone.get(k).equals(g.get(k))) {
+                    System.out.println("Un des gradients a été modifié pdt ADAM !");
+                    System.out.println("Gradient n°" + k);
+                    gClone.get(k).printDimensions("gclone");
+                    g.get(k).printDimensions("g nrml");
+                    assert(false) : "HAAAAAAAAAAAAA";
+
+                }**/
+            }
         }
 
         // Met à jour les paramètres avec la correction calculée plus tôt.
@@ -152,6 +196,7 @@ public class Adam extends Optimizer {
 
         lastGradients = gradients;
         this.iteration++;
+
     }
 
     /**
@@ -161,13 +206,14 @@ public class Adam extends Optimizer {
      */
     public void initialize(BackProResult gradients) {
         int size = gradients.size();
-
         this.firstOrderMomentsWeights = new GradientMatrix[size];
         this.secondOrderMomentsWeights = new GradientMatrix[size];
         this.firstOrderMomentsBias = new BiasVector[size];
         this.secondOrderMomentsBias = new BiasVector[size];
 
         for(int i = 0; i < size; i++) {
+
+            // Initialize weight moments
             GradientMatrix weightGradient = gradients.getWeightGradient(i);
             this.firstOrderMomentsWeights[i] = new GradientMatrix(Utils.zeroArray(
                     weightGradient.getNumberOfRows(),
@@ -178,9 +224,9 @@ public class Adam extends Optimizer {
                     weightGradient.getNumberOfRows(),
                     weightGradient.getNumberOfColumns()
             ));
+
             // Initialize bias moments
             BiasVector biasGradient = gradients.getBiasGradient(i);
-
             this.firstOrderMomentsBias[i] = new BiasVector(Utils.zeroArray(
                     1,
                     biasGradient.getNumberOfColumns()
@@ -193,6 +239,9 @@ public class Adam extends Optimizer {
 
         this.lastGradients = gradients;
         this.iteration = 1;
+        System.out.println("adam est initialisé");
+        this.initialized = true;
+
     }
 
 
@@ -214,9 +263,22 @@ public class Adam extends Optimizer {
 
         // Sinon, multiplier par le gradient
         // Mettre à jour le moment: m_t = beta*m_{t-1} + (1-beta)*g_t
-        momentum.addMultipliedMatrix(gradient, (1-beta));
+        else {
+            momentum.addMultipliedMatrix(gradient, (1-beta));
+        }
+
     }
 
+    public void print() {
 
+        System.out.println("Nombre de gradients : " + this.lastGradients.size());
+        System.out.println();
+        System.out.println("Nombre de moments 1er ordre W : " + this.firstOrderMomentsWeights.length);
+        System.out.println("Nombre de moments 1er ordre B : " + this.firstOrderMomentsBias.length);
+        System.out.println();
+        System.out.println("Nombre de moments 2nd ordre W : " + this.secondOrderMomentsWeights.length);
+        System.out.println("Nombre de moments 2nd ordre B : " + this.secondOrderMomentsBias.length);
+        System.out.println();
+    }
 
 }

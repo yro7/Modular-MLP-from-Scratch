@@ -26,7 +26,6 @@ public abstract class Optimizer {
 
         BackProResult gradients = mlp.backpropagate(input, expectedOutput, lossFunction, regularization);
 
-
         this.updateParameters(gradients, mlp);
     }
 

@@ -27,27 +27,29 @@ public class Instancier {
         // Génère un ensemble de données d'entraînement Mnist
         MnistDataset mnistDataset = new MnistDataset();
 
-        Adam adam = new Adam();
-
         // Construction du trainer
         Trainer mnistTrainer = Trainer.builder()
                 .setLossFunction(CE)
-                .setOptimizer(new Adam())
+                .setOptimizer(new SGD(0.01))
                 .setDataset(mnistDataset)
                 .setEpoch(1)
-                .setParameterRegularization(new ElasticNet(1e-4, 1e-3))
+                .setParameterRegularization(null)
+             //   .setParameterRegularization(new ElasticNet(1e-4, 1e-3))
                 .setBatchSize(2000)
                 .build();
 
         // Accuracy : 0.8196 sans Elastic net
-        // Accuracy : avec Elastic net
+        // Accuracy : 0.8196  avec Elastic net
+        /**
         MLP mnistMLP = MLP.builder(784)
-                .setRandomSeed(13)
+                .setRandomSeed(13354)
                 .addLayer(256, ReLU)
                 .addLayer(128, ReLU)
                 .addLayer(10, SoftMax)
                 .build()
-                .train(mnistTrainer);
+                .train(mnistTrainer);**/
+
+        MLP mnistMLP = MLP.importModel("mnist_resolver");
 
        // mnistMLP.serialize("mnistTest_1epoch_ADAM");
 
@@ -57,6 +59,7 @@ public class Instancier {
         eval.print();
 
         // récupère les 100 premiers exemples
+
         List<Dataloader.LabeledDataSample<MnistImage, Classification>> t = mnistDataset.trainDataLoader.loadList(1,100);
 
         for(int i = 0; i < 99; i++){
