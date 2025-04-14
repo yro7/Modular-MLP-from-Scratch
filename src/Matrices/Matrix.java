@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Classe utilitaire pour implémenter tous les algorithmes de gestion de matrices.
@@ -17,6 +18,7 @@ import java.util.function.Function;
  */
 public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
 
+    public final double EPSILON = 1e-10;
     double[][] data;
 
     /**
@@ -468,8 +470,10 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
      */
     public T hadamardQuotient(Matrix<?> matrix){
         verifyDimensions(matrix);
+        assert(matrix.hasNegativeValues()) : "Certaines valeurs de la matrice sont nulles, division impossible.";
         return elementWiseOperation((d1, d2) -> d1 / d2, matrix);
     }
+
 
     /**
      * Calcule le quotient de Hadamard (division élément par élément) avec une autre matrice.
@@ -590,10 +594,15 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
      * @mutable Cette méthode modifie la matrice actuelle
      * @intermédiaire Renvoie this pour permettre le chaînage
      */
-    public Matrix<?> sqrt() {
+    public T sqrt() {
+        System.out.println("inside sqrt");
+        this.forEach(System.out::println);
+
+        assert(this.hasNegativeValues()) : "Certaines valeurs de la matrice sont < 0, sqrt impossible !";
         this.applyFunction(Math::sqrt);
         return self();
     }
+
 
 
     /**
@@ -777,4 +786,30 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
 
         return res;
     }
+
+
+    /**
+     * Teste pour chaque valeur de la matrice un certain Prédicat.
+     * Si au moins une des valeurs de la matrice vérifie le prédicat, renvoiera faux.
+     * @param pred
+     * @return
+     */
+    private boolean anyMatch(Predicate<Double> pred) {
+        AtomicBoolean res = new AtomicBoolean(false);
+        this.forEach(d -> {
+            if(pred.test(d)) res.set(true);
+        });
+
+        return res.get();
+    }
+
+
+    public boolean hasNegativeValues() {
+        return this.anyMatch(d -> Double.compare(d, 0) < 0);
+    }
+
+    public boolean hasNullValues() {
+        return this.anyMatch(d -> Double.compare(d, 0) == 0);
+    }
+
 }

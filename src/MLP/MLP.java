@@ -1,6 +1,7 @@
 package MLP;
 
 import Function.LossFunction;
+import MLP.Optimizers.Adam;
 import MLP.Optimizers.Optimizer;
 import MLP.Regularizations.ParameterRegularization;
 import Matrices.ActivationMatrix;
@@ -420,6 +421,16 @@ public class MLP implements Serializable {
 
         public int size() {
             return this.results.size();
+        }
+
+        public List<GradientMatrix> getGradients() {
+            List<GradientMatrix> res = new ArrayList<>();
+            for(Pair<GradientMatrix,BiasVector> bpr : this.results) {
+                res.add(bpr.getA());
+
+            }
+
+            return res;
         }
     }
 
