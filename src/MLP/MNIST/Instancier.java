@@ -40,16 +40,15 @@ public class Instancier {
 
         // Accuracy : 0.8196 sans Elastic net
         // Accuracy : 0.8196  avec Elastic net
-        /**
         MLP mnistMLP = MLP.builder(784)
                 .setRandomSeed(13354)
                 .addLayer(256, ReLU)
                 .addLayer(128, ReLU)
                 .addLayer(10, SoftMax)
                 .build()
-                .train(mnistTrainer);**/
+                .train(mnistTrainer);
 
-        MLP mnistMLP = MLP.importModel("mnist_resolver");
+       // MLP mnistMLP = MLP.importModel("mnist_resolver");
 
        // mnistMLP.serialize("mnistTest_1epoch_ADAM");
 
