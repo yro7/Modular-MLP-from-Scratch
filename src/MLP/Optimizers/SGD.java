@@ -29,7 +29,10 @@ public class SGD extends Optimizer {
 
     @Override
     public void updateParameters(BackProResult gradients, MLP mlp) {
+
         for(int l = 0; l < mlp.getLayers().size(); l++ ) {
+            gradients.getWeightGradient(l).printNorm();
+
             GradientMatrix weightCorrection = gradients.getWeightGradient(l).multiply(learningRate);
             BiasVector biasGradient = gradients.getBiasGradient(l).multiply(learningRate);
 

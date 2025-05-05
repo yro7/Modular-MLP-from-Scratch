@@ -1,11 +1,15 @@
+import MLP.Data.LabeledDataset;
+import MLP.Data.Loaders.Dataloader;
 import MLP.MLP;
 import MLP.Optimizers.Adam;
-import MLP.Optimizers.SGD;
-import MLP.Regularizations.ParameterRegularization;
 import Matrices.*;
+import MLP.Trainer.Trainer;
+
+import java.util.List;
 
 import static Function.ActivationFunction.*;
 import static Function.LossFunction.*;
+
 
 // TODO ROADMAP :
 /**
@@ -13,14 +17,20 @@ import static Function.LossFunction.*;
  * Implémenter régularization
  * Implémenter dropout
  */
+
+
 public class Main {
+
+
     public static void main(String[] args) {
 
         MLP mlp = MLP.builder(2)
                 .setRandomSeed(3)
                 .addLayer(4, ReLU)
                 .addLayer(1, Sigmoid)
+                .addLayer(1, Sigmoid)
                 .build();
+
 
         double[][] xorData = {
                 {0, 0},
@@ -41,13 +51,76 @@ public class Main {
         ActivationMatrix batchTheorique = new ActivationMatrix(xorResult);
         Adam optimizer = new Adam();
 
-        SGD optimizer2 = new SGD(0.1);
-        for(int i = 0; i < 10000; i++){
+        Dataloader loader = new Dataloader(4, 2, 1, null, null, 4) {
+            @Override
+            public double[] vectorizeInput(Object input) {
+                return (double[]) input;
+            }
+
+            @Override
+            public double[] vectorizeOutput(Object input) {
+                return (double[]) input;
+            }
+
+            @Override
+            public LabeledDataSample load(int i) {
+                return new LabeledDataSample(xorData[i], xorResult[i]);
+            }
+        };
 
 
-            mlp.updateParameters(batchInput, batchTheorique, MSE, optimizer, null);
-            if(i % 100 == 0) printLoss(mlp, batchInput, batchTheorique);
-        }
+        LabeledDataset dataset = new LabeledDataset(loader, loader);
+
+        // Construction du trainer
+        Trainer trainer = Trainer.builder()
+                .setLossFunction(BCE)
+                .setOptimizer(new Adam(0.1,0.9,0.999))
+                .setDataset(dataset)
+                .setEpoch(10)
+                .setParameterRegularization(null)
+                //   .setParameterRegularization(new ElasticNet(1e-4, 1e-3))
+                .setBatchSize(4)
+                .build();
+
+        /**
+         *
+         * EN 10_000 EPOCHS :
+         *
+         * Avec Adam (0.1, 0.9, 0.999) :
+         *
+         * 0.0012854337670645363,
+         * 0.9930651281264739,
+         * 0.9988654605782511,
+         * 0.00202564798675737,
+         *
+         * Avec SGD(0.1) :
+         *
+         * 6.419657276914641E-4,
+         * 0.9945661655430321,
+         * 0.9995142178198154,
+         * 8.508416840000762E-4,
+         *
+         * EN 10 EPOCHS :
+         *
+         * ADAM :
+         *
+         * 0.49691084052990014,
+         * 0.49348979694177214,
+         * 0.5552906321798,
+         * 0.48333864357268713,
+         *
+         * SGD :
+         *
+         * 0.4936722930702566,
+         * 0.4925392124255475,
+         * 0.5665708058080177,
+         * 0.4822245652481131,
+         */
+
+        trainer.train(mlp);
+
+        mlp.feedForward(batchInput).getNetworkOutput().print();
+
 
     }
         public static void printLoss(MLP mlp, ActivationMatrix batchInput, ActivationMatrix batchTheorique){

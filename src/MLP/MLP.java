@@ -1,9 +1,9 @@
 package MLP;
 
 import Function.LossFunction;
-import MLP.Optimizers.Adam;
 import MLP.Optimizers.Optimizer;
 import MLP.Regularizations.ParameterRegularization;
+import MLP.Trainer.Trainer;
 import Matrices.ActivationMatrix;
 import Matrices.BiasVector;
 import Matrices.GradientMatrix;

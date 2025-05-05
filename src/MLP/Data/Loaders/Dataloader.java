@@ -42,6 +42,7 @@ public abstract class Dataloader<FeaturesType, LabelsType> {
         this.batchSize = batchSize;
     }
 
+
     /**
      * Récupère de la data et la vectorize pour qu'elle puisse
      * être transformée en matrice d'activation par la suite.

@@ -1,7 +1,6 @@
 package MLP.Regularizations;
 
-import MLP.MLP;
-import MLP.Trainer;
+import MLP.Trainer.Trainer;
 
 /**
  * Représente une Régularization appliquée lors de l'entraînement.
