@@ -470,7 +470,7 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
      */
     public T hadamardQuotient(Matrix<?> matrix){
         verifyDimensions(matrix);
-        assert(matrix.hasNegativeValues()) : "Certaines valeurs de la matrice sont nulles, division impossible.";
+        assert(!matrix.hasNullValues()) : "Certaines valeurs de la matrice sont nulles, division impossible.";
         return elementWiseOperation((d1, d2) -> d1 / d2, matrix);
     }
 
@@ -595,10 +595,7 @@ public abstract class Matrix<T extends Matrix<T>> implements Cloneable {
      * @intermédiaire Renvoie this pour permettre le chaînage
      */
     public T sqrt() {
-        System.out.println("inside sqrt");
-        this.forEach(System.out::println);
-
-        assert(this.hasNegativeValues()) : "Certaines valeurs de la matrice sont < 0, sqrt impossible !";
+        assert(!this.hasNegativeValues()) : "Certaines valeurs de la matrice sont < 0, sqrt impossible !";
         this.applyFunction(Math::sqrt);
         return self();
     }

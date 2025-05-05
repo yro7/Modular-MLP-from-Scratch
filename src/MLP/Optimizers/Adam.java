@@ -105,18 +105,8 @@ public class Adam extends Optimizer {
 
     @Override
     public void updateParameters(BackProResult gradients, MLP mlp) {
-
-
         List<GradientMatrix> g = gradients.getGradients();
-
-        if(iteration < 3) System.out.println("iteration : " + iteration);
-
         if(!initialized) initialize(gradients);
-
-        List<GradientMatrix> gClone = new ArrayList<>();
-        for(GradientMatrix gm : g) {
-            gClone.add(gm.clone());
-        }
 
         int size = gradients.size();
 
@@ -159,7 +149,8 @@ public class Adam extends Optimizer {
                     secondOrderMomentsBias[i].clone()
                             .divide(1-beta2_t);
 
-            secondOrderMomentsWeightsCorrected.add(epsilon);
+            System.out.println("MATRIX :");
+            secondOrderMomentsWeightsCorrected.print();
             GradientMatrix nonNullMatrixZebi = secondOrderMomentsWeightsCorrected.sqrt().add(epsilon);
             assert(!nonNullMatrixZebi.hasNullValues()) : "should have no null values";
 
@@ -169,22 +160,6 @@ public class Adam extends Optimizer {
             biasCorrections[i] = firstOrderMomentsBiasCorrected.multiply(learningRate)
                     .hadamardQuotient(secondOrderMomentsBiasCorrected.sqrt().add(epsilon));
 
-            if(iteration <3) System.out.println("weight correction : ");
-           if(iteration < 3) System.out.println(weightCorrections[0].getData()[0][0]);
-
-
-
-            for(int k = 0; k < gClone.size(); k++) {
-
-             /**   if(!gClone.get(k).equals(g.get(k))) {
-                    System.out.println("Un des gradients a été modifié pdt ADAM !");
-                    System.out.println("Gradient n°" + k);
-                    gClone.get(k).printDimensions("gclone");
-                    g.get(k).printDimensions("g nrml");
-                    assert(false) : "HAAAAAAAAAAAAA";
-
-                }**/
-            }
         }
 
         // Met à jour les paramètres avec la correction calculée plus tôt.

@@ -1,8 +1,12 @@
-package MLP;
+package MLP.Trainer;
 import Function.LossFunction;
 import MLP.Data.LabeledDataset;
+import MLP.Logger;
 import MLP.Optimizers.Optimizer;
 import MLP.Regularizations.ParameterRegularization;
+import com.sun.tools.javac.Main;
+
+import static MLP.Logger.LogLevel.WARN;
 
 /**
  * Permet de créer facilement un Trainer.
@@ -60,10 +64,23 @@ public class TrainerBuilder {
     }
 
     public Trainer build(){
+
+        // Vérification des paramètres essentiels
         assert (this.hasLossFunction()) : "Le Trainer doit avoir une fonction de coût !";
-        assert (this.hasDataset()) : "Le Trainer doit avoir dataset !";
+        assert (this.hasDataset()) : "Le Trainer doit avoir un ataset !";
         assert (this.hasOptimizer()) : "Le Trainer doit avoir un Optimizer !";
 
+        //
+        if(this.product.batchSize == 1 || this.product.epochs == 1) {
+            Logger.warn("Warn optimizer : batchSize ou epochs définies à seulement 1.");
+        }
+
+        if(!this.hasParameterRegularization()) {
+            Logger.warn("Warn optimizer : aucune régularisation des paramètres définie.");
+        }
+
+
+        this.product.state = Trainer.TrainerState.CONFIGURED;
         return this.product;
     }
 

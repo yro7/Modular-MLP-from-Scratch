@@ -29,6 +29,7 @@ public enum ActivationFunction implements Function<ActivationMatrix,ActivationMa
 
     SoftMax(Xavier,
             activationmatrix -> {
+
                 activationmatrix.centerOverRows();
                 activationmatrix.applyFunction(Math::exp);
                 double[] sumOverRows = activationmatrix.sumOverRows();

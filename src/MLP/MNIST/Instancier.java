@@ -3,21 +3,17 @@ package MLP.MNIST;
 
 import MLP.Data.Loaders.Dataloader;
 import MLP.MLP;
-import MLP.Optimizers.Adam;
 import MLP.Optimizers.SGD;
-import MLP.Regularizations.ParameterRegularization;
+import MLP.Trainer.Evaluation;
 import Matrices.ActivationMatrix;
-import MLP.Trainer;
-import MLP.Optimizers.Optimizer;
+import MLP.Trainer.Trainer;
 import MLP.Classification;
 import Matrices.Utils;
 
 import java.util.List;
 
-import static MLP.Regularizations.ParameterRegularization.ElasticNet;
 import static Function.ActivationFunction.*;
 import static Function.LossFunction.*;
-import static MLP.Trainer.Evaluation;
 import static MLP.MLP.FeedForwardResult;
 
 public class Instancier {
@@ -27,28 +23,31 @@ public class Instancier {
         // Génère un ensemble de données d'entraînement Mnist
         MnistDataset mnistDataset = new MnistDataset();
 
+
+
         // Construction du trainer
         Trainer mnistTrainer = Trainer.builder()
                 .setLossFunction(CE)
-                .setOptimizer(new SGD(0.01))
+                .setOptimizer(new SGD(0.001))
                 .setDataset(mnistDataset)
                 .setEpoch(1)
                 .setParameterRegularization(null)
              //   .setParameterRegularization(new ElasticNet(1e-4, 1e-3))
-                .setBatchSize(2000)
+                .setBatchSize(1)
                 .build();
 
-        // Accuracy : 0.8196 sans Elastic net
-        // Accuracy : 0.8196  avec Elastic net
+      //  mnistDataset.trainDataLoader.getBatch(0).getInput().print();
+       // mnistDataset.trainDataLoader.getBatch(0).getOutput().print();
+/**
         MLP mnistMLP = MLP.builder(784)
-                .setRandomSeed(13354)
+                .setRandomSeed(420)
                 .addLayer(256, ReLU)
                 .addLayer(128, ReLU)
                 .addLayer(10, SoftMax)
                 .build()
-                .train(mnistTrainer);
+                .train(mnistTrainer);**/
 
-       // MLP mnistMLP = MLP.importModel("mnist_resolver");
+        MLP mnistMLP = MLP.importModel("mnist_resolver");
 
        // mnistMLP.serialize("mnistTest_1epoch_ADAM");
 
