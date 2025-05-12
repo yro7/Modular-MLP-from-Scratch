@@ -1,7 +1,7 @@
 package Tests;
 
-import Function.ActivationFunction;
-import Matrices.ActivationMatrix;
+import functions.ActivationFunction;
+import matrices.ActivationMatrix;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

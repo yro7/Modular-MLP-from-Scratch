@@ -2,7 +2,7 @@ package Tests;
 
 import static org.junit.Assert.*;
 
-import Matrices.Matrix;
+import matrices.Matrix;
 import org.junit.Before;
 import org.junit.Test;
 

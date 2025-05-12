@@ -1,12 +1,12 @@
 package Tests;
 
-import Function.LossFunction;
-import Matrices.ActivationMatrix;
-import Matrices.GradientMatrix;
+import functions.LossFunction;
+import matrices.ActivationMatrix;
+import matrices.GradientMatrix;
 import org.junit.jupiter.api.Test;
 
-import static Function.LossFunction.MAE;
-import static Function.LossFunction.MSE;
+import static functions.LossFunction.MAE;
+import static functions.LossFunction.MSE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LossFunctionTest {
