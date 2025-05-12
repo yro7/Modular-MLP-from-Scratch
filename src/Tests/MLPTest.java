@@ -1,11 +1,9 @@
 package Tests;
 
-import Function.ActivationFunction;
-import Function.LossFunction;
-import MLP.Layer;
-import MLP.MLP;
-import MLP.Pair;
-import Matrices.*;
+import functions.ActivationFunction;
+import mlps.Layer;
+import mlps.MLP;
+import matrices.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static Function.ActivationFunction.*;
-import static Function.LossFunction.MSE;
-import static MLP.MLP.FeedForwardResult;
+import static functions.ActivationFunction.*;
+import static functions.LossFunction.MSE;
+import static mlps.MLP.FeedForwardResult;
 import static org.junit.Assert.*;
 
 public class MLPTest {
