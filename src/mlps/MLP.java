@@ -98,7 +98,8 @@ public class MLP implements Serializable {
     }
 
     /**
-     *
+     * Effectue l'algorithme de descente du gradient en fonction des paramètres choisis, puis
+     * renvoie les gradients associés à chaque couche.
      * @param input
      * @param expectedOutput
      * @param lossFunction
@@ -314,7 +315,7 @@ public class MLP implements Serializable {
      */
     public static class FeedForwardResult {
 
-        List<Pair<ActivationMatrix, ActivationMatrix>> results;
+        public List<Pair<ActivationMatrix, ActivationMatrix>> results;
 
         /**
          * Renvoie la {@link ActivationMatrix} de la couche n°i du MLP,

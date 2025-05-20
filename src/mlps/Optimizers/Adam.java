@@ -2,11 +2,14 @@ package mlps.Optimizers;
 
 import mlps.MLP;
 import static mlps.MLP.BackProResult;
+import static org.junit.Assert.*;
+
 import matrices.BiasVector;
 import matrices.GradientMatrix;
 import mlps.Layer;
 import matrices.Matrix;
 import matrices.Utils;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 
 import java.util.List;
 
@@ -28,7 +31,7 @@ public class Adam extends Optimizer {
     /**
      * Utilisé pour éviter la division par 0. 1e-8 comme dans l'article introduisant Adam.
      */
-    public static final double epsilon = 1;
+    public static final double epsilon = 1e-8;
 
     /**
      * Représente à quelle itération l'optimiseur est
@@ -72,9 +75,10 @@ public class Adam extends Optimizer {
      *
      */
     public Adam(double learningRate, double beta1, double beta2) {
-    //    assert(learningRate > 0): "Le learning rate devrait être strictement positif.";
-     //   assert(beta1 >= 0 && beta1 < 1) : "beta1 devrait appartenir à [0,1(.";
-       // assert(beta2 > 0 && beta2 < 1) : "beta2 devrait appartenir à [0,1(.";
+        assertTrue("Le learning rate devrait être strictement positif.", learningRate > 0);
+        assertTrue("beta1 devrait appartenir à [0,1(.", beta1 >= 0 && beta1 < 1);
+        assertTrue("beta2 devrait appartenir à [0,1(.", beta2 > 0 && beta2 < 1);
+
 
         this.learningRate = learningRate;
         this.beta1 = beta1;
@@ -126,8 +130,8 @@ public class Adam extends Optimizer {
             updateMomentum(secondOrderMomentsBias[i], biasGradient, beta2);
 
 
-            this.beta1_t *= beta1;
-            this.beta2_t *= beta2;
+            this.beta1_t *= beta1; // Mise à jour des beta (plus efficace comme ça
+            this.beta2_t *= beta2; // que en utilisant Math.pow à chaque fois)
 
             // Compute bias-corrected first/second moment estimate pour les poids
             GradientMatrix firstOrderMomentsWeightsCorrected =

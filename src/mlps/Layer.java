@@ -32,6 +32,12 @@ public class Layer implements Serializable {
         this.activationFunction = activationFunction;
     }
 
+    public Layer(WeightMatrix weightMatrix, BiasVector biasVector) {
+        this.weightMatrix = weightMatrix;
+        this.biasVector = biasVector;
+        this.activationFunction = ActivationFunction.Identity;
+    }
+
     public WeightMatrix getWeightMatrix() {
         return weightMatrix;
     }
