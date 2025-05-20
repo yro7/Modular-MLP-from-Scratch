@@ -2,8 +2,8 @@ package Tests;
 
 import matrices.Matrix;
 import matrices.WeightMatrix;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MatrixTest2 {
 
@@ -121,7 +121,7 @@ public class MatrixTest2 {
         }
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testAddMultipliedMatrixWithDifferentDimensions() {
         // Arrange
         double[][] dataA = {
@@ -137,7 +137,7 @@ public class MatrixTest2 {
         WeightMatrix matrixA = new WeightMatrix(dataA);
         WeightMatrix matrixB = new WeightMatrix(dataB);
 
-        // Act - should throw AssertionError due to dimension mismatch
-        matrixA.addMultipliedMatrix(matrixB, 2.0);
+        // Act & Assert - should throw AssertionError due to dimension mismatch
+        assertThrows(AssertionError.class, () -> matrixA.addMultipliedMatrix(matrixB, 2.0));
     }
 }

@@ -1,10 +1,10 @@
 package Tests;
 
-import static org.junit.Assert.*;
-
 import matrices.Matrix;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MatrixDimensionsTest {
 
@@ -14,7 +14,7 @@ public class MatrixDimensionsTest {
     private ConcreteMatrix matrix2x2;
     private ConcreteMatrix matrix1x1;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         double[][] data2x3 = {
                 {1, 2, 3},
@@ -61,24 +61,24 @@ public class MatrixDimensionsTest {
         assertEquals(1, matrix1x1.getNumberOfColumns());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testZeroRowsInitialization() {
-        new ConcreteMatrix(0, 3);
+        assertThrows(AssertionError.class, () -> new ConcreteMatrix(0, 3));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testZeroColumnsInitialization() {
-        new ConcreteMatrix(3, 0);
+        assertThrows(AssertionError.class, () -> new ConcreteMatrix(3, 0));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testNegativeRowsInitialization() {
-        new ConcreteMatrix(-2, 3);
+        assertThrows(AssertionError.class, () -> new ConcreteMatrix(-2, 3));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testNegativeColumnsInitialization() {
-        new ConcreteMatrix(3, -2);
+        assertThrows(AssertionError.class, () -> new ConcreteMatrix(3, -2));
     }
 
     @Test
@@ -103,9 +103,9 @@ public class MatrixDimensionsTest {
         assertEquals(3, clone2x3.getNumberOfColumns());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testAdditionIncompatibleDimensions() {
-        matrix2x3.add(matrix3x2);
+        assertThrows(AssertionError.class, () -> matrix2x3.add(matrix3x2));
     }
 
     @Test
@@ -115,14 +115,14 @@ public class MatrixDimensionsTest {
         assertEquals(3, result.getNumberOfColumns());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testSubtractionIncompatibleDimensions() {
-        matrix2x3.substract(matrix3x3);
+        assertThrows(AssertionError.class, () -> matrix2x3.substract(matrix3x3));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testHadamardProductIncompatibleDimensions() {
-        matrix2x3.hadamardProduct(matrix2x2);
+        assertThrows(AssertionError.class, () -> matrix2x3.hadamardProduct(matrix2x2));
     }
 
     @Test
@@ -132,9 +132,9 @@ public class MatrixDimensionsTest {
         assertEquals(2, result.getNumberOfColumns());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testMatrixMultiplicationInvalidDimensions() {
-        matrix2x3.multiply(matrix2x2);
+        assertThrows(AssertionError.class, () -> matrix2x3.multiply(matrix2x2));
     }
 
     @Test
@@ -144,9 +144,9 @@ public class MatrixDimensionsTest {
         assertEquals(3, result.getNumberOfColumns());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testMultiplyAtRightInvalidDimensions() {
-        matrix2x3.multiplyAtRight(matrix3x3);
+        assertThrows(AssertionError.class, () -> matrix2x3.multiplyAtRight(matrix3x3));
     }
 
     @Test
@@ -200,9 +200,6 @@ public class MatrixDimensionsTest {
         }
     }
 
-    /**
-     * Helper method to create a 2x3 data array for testing
-     */
     private double[][] data2x3() {
         return new double[][] {
                 {2, 3, 4},
@@ -210,9 +207,6 @@ public class MatrixDimensionsTest {
         };
     }
 
-    /**
-     * Concrete implementation of Matrix for testing
-     */
     static class ConcreteMatrix extends Matrix<ConcreteMatrix> {
         public ConcreteMatrix(int rows, int cols) {
             super(rows, cols);

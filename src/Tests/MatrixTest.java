@@ -1,10 +1,10 @@
 package Tests;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import matrices.Matrix;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MatrixTest {
 
@@ -14,7 +14,7 @@ public class MatrixTest {
     private Matrix<?> matrixD;
     private Matrix<?> matrixSquare;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Matrices de test standard (2x3)
         double[][] dataA = {
@@ -85,16 +85,16 @@ public class MatrixTest {
         assertArrayEquals(matrixA.getData()[1], copy.getData()[1], 1e-9);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testConstructorInvalidDimensions() {
         // Test avec un nombre de lignes négatif
-        new ConcreteMatrix(-1, 5);
+        assertThrows(AssertionError.class, () -> new ConcreteMatrix(-1, 5));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testConstructorInvalidDimensionsZeroColumns() {
         // Test avec un nombre de colonnes égal à zéro
-        new ConcreteMatrix(5, 0);
+        assertThrows(AssertionError.class, () -> new ConcreteMatrix(5, 0));
     }
 
     // Tests des méthodes de récupération de données
@@ -284,9 +284,6 @@ public class MatrixTest {
         assertEquals(8.0, result.getData()[1][0], 1e-9);   // 4 * 2
         assertEquals(10.0, result.getData()[1][1], 1e-9);  // 5 * 2
         assertEquals(12.0, result.getData()[1][2], 1e-9);  // 6 * 2
-
-
-
     }
 
     @Test
@@ -345,10 +342,10 @@ public class MatrixTest {
         assertEquals(51.0, result.getData()[2][2], 1e-9);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testMultiplyIncompatibleMatrices() {
         // A (2x3) * B (2x3) - incompatible dimensions
-        matrixA.multiply(matrixB);
+        assertThrows(AssertionError.class, () -> matrixA.multiply(matrixB));
     }
 
     // Tests des opérations mathématiques spécifiques
@@ -481,10 +478,10 @@ public class MatrixTest {
         assertEquals(15.0, matrixSquare.trace(), 1e-9);  // 1 + 5 + 9 = 15
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testTraceNonSquareMatrix() {
         // La trace n'est définie que pour les matrices carrées
-        matrixA.trace();
+        assertThrows(AssertionError.class, () -> matrixA.trace());
     }
 
     // Tests des méthodes utilitaires
@@ -518,16 +515,16 @@ public class MatrixTest {
         assertFalse(matrixA.hasSameDimensions(matrixSquare));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testVerifyDimensionsFails() {
         // Devrait lancer une AssertionError car les dimensions sont différentes
-        matrixA.verifyDimensions(matrixC);
+        assertThrows(AssertionError.class, () -> matrixA.verifyDimensions(matrixC));
     }
 
     @Test
     public void testVerifyDimensionsSucceeds() {
         // Ne devrait pas lancer d'exception car les dimensions sont identiques
-        matrixA.verifyDimensions(matrixB);
+        assertDoesNotThrow(() -> matrixA.verifyDimensions(matrixB));
     }
 
     @Test

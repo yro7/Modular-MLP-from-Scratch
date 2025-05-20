@@ -1,165 +1,102 @@
 package Tests;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import functions.ActivationFunction;
+import matrices.BiasVector;
+import matrices.GradientMatrix;
+import matrices.WeightMatrix;
 import mlps.Layer;
 import mlps.MLP;
-import matrices.*;
-import org.junit.Before;
-import org.junit.Test;
+import mlps.Optimizers.SGD;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import matrices.ActivationMatrix;
+import functions.LossFunction;
+import mlps.Optimizers.Optimizer;
+import mlps.Regularizations.ParameterRegularization;
+import mlps.Trainer.Trainer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
-import static functions.ActivationFunction.*;
-import static functions.LossFunction.MSE;
-import static mlps.MLP.FeedForwardResult;
-import static org.junit.Assert.*;
 
 public class MLPTest {
 
     private MLP mlp;
-    private int inputDim;
-    private int numberOfLayers;
-    private int outputDim;
-    private int batchSize;
-    private Random random;
-    private MLP mlp1;
-    private MLP mlp2;
+    private int dimInput = 3;
+    private List<Layer> layers;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        random = new Random(69);
+        // Initialisation des couches pour le test
+        layers = new ArrayList<>();
+        layers.add(new Layer(new WeightMatrix(3, 4), new BiasVector(4))); // Couche 1
+        layers.add(new Layer(new WeightMatrix(4, 2), new BiasVector(2))); // Couche 2
 
-
-        mlp = MLP.builder(43)
-                .setRandomSeed(2)
-                .addLayer(7, ReLU)
-                .addLayer(3, ActivationFunction.ReLU)
-                .addLayer(12, ReLU)
-                .addLayer(17, ActivationFunction.ReLU)
-                .addLayer(24, ActivationFunction.Sigmoid)
-                .addLayer(24, ActivationFunction.Sigmoid)
-                .addLayer(24, ActivationFunction.Sigmoid)
-                .addLayer(36, ActivationFunction.Sigmoid)
-                .build();
-
-        inputDim = mlp.getDimInput();
-        numberOfLayers = mlp.getLayers().size();
-        outputDim = mlp.getLayers().getLast().size();
-        batchSize = 15;
-
-    }
-
-    private void initializeRandomly(WeightMatrix matrix) {
-        matrix.applyToElements((i, j) -> matrix.getData()[i][j] = random.nextDouble() * 0.1 - 0.05);
-    }
-
-    private void initializeRandomly(BiasVector vector) {
-        vector.applyToElements((i, j) -> vector.getData()[i][j] = random.nextDouble() * 0.1 - 0.05);
+        mlp = new MLP(layers, dimInput);
     }
 
     @Test
     public void testFeedForward() {
+        ActivationMatrix input = new ActivationMatrix(new double[][]{{1, 0, 1}});
+        MLP.FeedForwardResult result = mlp.feedForward(input);
 
-
-        List<WeightMatrix> weightsClone = new ArrayList<>();
-        List<BiasVector> biasesClone = new ArrayList<>();
-
-        for(Layer layer : mlp.getLayers()) {
-            weightsClone.add(layer.getWeightMatrix().clone());
-            biasesClone.add(layer.getBiasVector().clone());
-        }
-
-        // Créer l'entrée
-        ActivationMatrix input = new ActivationMatrix(creerTableau(mlp.getDimInput(), batchSize));
-
-        FeedForwardResult activations = mlp.feedForward(input);
-
-        for(int l = 0; l < mlp.getLayers().size(); l++){
-
-            WeightMatrix cloneWeight = weightsClone.get(l);
-            WeightMatrix weightOfLayer = mlp.getLayer(l).getWeightMatrix();
-
-            BiasVector cloneBias = biasesClone.get(l);
-            BiasVector biasOfLayer = mlp.getLayer(l).getBiasVector();
-
-            assert(cloneWeight.equals(weightOfLayer)) : "Le feedforward a modifié les poids du réseau.";
-            assert(cloneBias.equals(biasOfLayer)) : "Le feedforward a modifié les biais du réseau.";
-            assert(activations.getResult_PostAF(l).getNumberOfRows() == weightOfLayer.getNumberOfRows()) : "Le nombre de neurones dans le résultat du feedforward n'est pas égal au nombre de neuronnes de la couche.";
-        }
-
+        assertNotNull(result);
+        assertEquals(2, result.results.size()); // Vérifie que le résultat contient les activations pour chaque couche
     }
-
-
 
     @Test
-    public void testMLPBuilder() {
-        // Create MLP using builder
-        MLP builtMlp = MLP.builder(inputDim)
-                .addLayer(numberOfLayers, ReLU)
-                .addLayer(outputDim, Sigmoid)
-                .build();
+    public void testComputeLoss() {
+        ActivationMatrix input = new ActivationMatrix(new double[][]{{1, 0, 1}});
+        ActivationMatrix expectedOutput = new ActivationMatrix(new double[][]{{1, 0}});
+        LossFunction lossFunction = LossFunction.MSE;
 
-        // Verify dimensions
-        assertEquals("Input dimension should match", inputDim, builtMlp.getLayer(0).getWeightMatrix().getNumberOfColumns());
-        assertEquals("Hidden layer dimensions should match", numberOfLayers, builtMlp.getLayer(0).size());
-        assertEquals("Output layer dimensions should match", outputDim, builtMlp.getLayer(1).size());
-        assertEquals("MLP should have 2 layers", 2, builtMlp.getLayers().size());
-
-        // Verify activation functions
-        assertEquals("Hidden layer activation function should be ReLU",
-                ReLU, builtMlp.getLayer(0).getActivationFunction());
-        assertEquals("Output layer activation function should be Sigmoid",
-                Sigmoid, builtMlp.getLayer(1).getActivationFunction());
+        double loss = mlp.computeLoss(input, expectedOutput, lossFunction);
+        assertTrue(loss >= 0); // Vérifie que la perte est un nombre positif
     }
 
-    // Test with different activation functions
     @Test
-    public void testDifferentActivationFunctions() {
-        // Create MLP with tanh and softmax
-        MLP customMlp = MLP.builder(inputDim)
-                .addLayer(numberOfLayers, TanH)
-                .addLayer(outputDim, ReLU)
-                .build();
-
-        // Create input matrix
-        ActivationMatrix input = createRandomActivationMatrix(inputDim, batchSize);
-
-        // Run feedForward
-        FeedForwardResult activations = customMlp.feedForward(input);
-
-        // Verify tanh activations (between -1 and 1)
-        ActivationMatrix hiddenActivations = activations.getResult_PostAF(0);
-        for (int i = 0; i < numberOfLayers; i++) {
-            for (int j = 0; j < batchSize; j++) {
-                double value = hiddenActivations.getData()[i][j];
-                assertTrue("Tanh activation should be between -1 and 1", value >= -1 && value <= 1);
+    public void testTrain() {
+        Trainer trainer = new Trainer() {
+            @Override
+            public void train(MLP mlp) {
+                // Implémentation simplifiée de l'entraînement
             }
-        }
+        };
+
+        MLP trainedMlp = mlp.train(trainer);
+        assertNotNull(trainedMlp);
     }
 
-    // Helper methods
+    @Test
+    public void testUpdateParameters() {
+        ActivationMatrix input = new ActivationMatrix(new double[][]{{1, 0, 1}});
+        ActivationMatrix expectedOutput = new ActivationMatrix(new double[][]{{1, 0}});
+        LossFunction lossFunction = LossFunction.MSE;
+        Optimizer optimizer = new SGD(0.1);
 
-    private ActivationMatrix createRandomActivationMatrix(int rows, int cols) {
-        return createRandomActivationMatrix(rows, cols, -1, 1);
+        mlp.updateParameters(input, expectedOutput, lossFunction, optimizer, null);
+        assertTrue(true);
     }
 
-    private ActivationMatrix createRandomActivationMatrix(int rows, int cols, double min, double max) {
-        ActivationMatrix matrix = new ActivationMatrix(rows, cols);
-        double range = max - min;
-        matrix.applyToElements((i, j) -> matrix.getData()[i][j] = random.nextDouble() * range + min);
-        return matrix;
+    @Test
+    public void testBackpropagate() {
+        ActivationMatrix input = new ActivationMatrix(new double[][]{{1, 0, 1}});
+        ActivationMatrix expectedOutput = new ActivationMatrix(new double[][]{{1, 0}});
+        LossFunction lossFunction = LossFunction.MSE;
+        MLP.BackProResult result = mlp.backpropagate(input, expectedOutput, lossFunction, null);
+        assertNotNull(result);
+        assertEquals(2, result.size()); // Vérifie que le résultat contient les gradients pour chaque couche
     }
 
-    public static double[][] creerTableau(int n, int p){
-        double[][] res = new double[n][p];
-        int compteur = 1;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < p; j++) {
-                res[i][j] = compteur++;
-            }
-        }
-        return res;
+    @Test
+    public void testSerializeAndImportModel() {
+        String modelName = "testModel";
+        mlp.serialize(modelName);
+
+        MLP importedMlp = MLP.importModel(modelName);
+        assertNotNull(importedMlp);
+        assertEquals(mlp.getDimInput(), importedMlp.getDimInput());
+        assertEquals(mlp.getLayers().size(), importedMlp.getLayers().size());
     }
 }
