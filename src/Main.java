@@ -1,14 +1,11 @@
-import mlps.Data.LabeledDataset;
-import mlps.Data.Loaders.Dataloader;
+import mlps.data.LabeledDataset;
+import mlps.data.Loaders.Dataloader;
 import mlps.MLP;
-import mlps.Optimizers.Adam;
+import mlps.optimizers.Adam;
 import matrices.*;
-import mlps.Optimizers.Optimizer;
-import mlps.Optimizers.SGD;
-import mlps.Trainer.Trainer;
-
-import java.util.IntSummaryStatistics;
-import java.util.stream.IntStream;
+import mlps.optimizers.Optimizer;
+import mlps.optimizers.SGD;
+import mlps.trainer.Trainer;
 
 import static functions.ActivationFunction.*;
 import static functions.LossFunction.*;

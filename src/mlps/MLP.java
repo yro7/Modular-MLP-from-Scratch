@@ -1,9 +1,9 @@
 package mlps;
 
 import functions.LossFunction;
-import mlps.Optimizers.Optimizer;
-import mlps.Regularizations.ParameterRegularization;
-import mlps.Trainer.Trainer;
+import mlps.optimizers.Optimizer;
+import mlps.regularizations.ParameterRegularization;
+import mlps.trainer.Trainer;
 import matrices.ActivationMatrix;
 import matrices.BiasVector;
 import matrices.GradientMatrix;
