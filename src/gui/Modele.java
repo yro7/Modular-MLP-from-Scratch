@@ -64,7 +64,7 @@ public class Modele extends java.util.Observable{
         } 
     }    
 
-    private MLP construireMLP(int dimInput){
+    public MLP construireMLP(int dimInput){
         MLPBuilder mlpBuilder = MLP.builder(dimInput).setRandomSeed(3);
         for (int i = 0; i < this.taille(); i++){
             mlpBuilder.addLayer(this.taille(i), ReLU);

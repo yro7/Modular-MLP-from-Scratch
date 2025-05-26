@@ -89,7 +89,7 @@ public class AffichageReseau extends JPanel {
             
             // Pour chaque neurone, on l'ajoute et on insère un espace fixe après
             for (int j = 0; j < modele.taille(i); j++){
-                JLabel neurone = new JLabel(new ImageIcon(getClass().getResource("neurone.png")));
+                JLabel neurone = new JLabel(new ImageIcon(getClass().getResource("assets/neurone.png")));
                 neurone.setAlignmentX(Component.CENTER_ALIGNMENT);
                 panelNeurones.add(neurone);
                 panelNeurones.add(Box.createVerticalStrut(10));
