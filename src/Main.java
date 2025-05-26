@@ -23,6 +23,10 @@ public class Main {
 
     public static void main(String[] args) {
 
+        MLP mnist = MLP.importModel("mnistTest2_ADAM");
+
+        MLP.FeedForwardResult t;
+        t.getNetworkOutput()
 
         MLP mlp = MLP.builder(2)
                 .setRandomSeed(3)
