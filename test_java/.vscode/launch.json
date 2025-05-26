@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "java",
+        "name": "Run JavaFX",
+        "request": "launch",
+        "mainClass": "Main",
+        "vmArgs": "--module-path /Users/1lyasmacbook/Documents/javafx-sdk-24.0.1/lib --add-modules javafx.controls"
+      }
+    ]
+  }
