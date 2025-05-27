@@ -141,6 +141,23 @@ public class ActivationMatrix extends Matrix<ActivationMatrix> {
     }
 
     /**
+     * Convertis la matrice d'activation en liste 2D.
+     * @return liste 2D représentant la matrice d'activation.
+     * @throws IllegalStateException si matrice nulle.
+     */
+    public double[][] toArray() { // ADDED
+        double[][] data = this.getData();
+        if (data == null) {
+            throw new IllegalStateException("Matrix data is null");
+        }
+        // Return a copy to avoid external modification
+        double[][] result = new double[data.length][];
+        for (int i = 0; i < data.length; i++) {
+            result[i] = Arrays.copyOf(data[i], data[i].length);
+        }
+        return result;
+    }
+    /**
      * Pour chaque ligne de la matrice, met toutes les valeurs à 0 sauf une seule.
      * C'est la fonction indiceFinder qui se charge pour chaque ligne de calculer
      * lequel des indices doit valoir 1.
