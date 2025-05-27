@@ -45,7 +45,7 @@ public class AffichageReseau extends JPanel {
             JPanel controles = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
             // Fixer la taille du panel pour que la paire de boutons n'occupe pas plus d'espace
             // Ici, on l'augmente un peu pour tenir compte des boutons plus larges : par exemple 180 pixels de large
-            Dimension controlSize = new Dimension(180, 30);
+            Dimension controlSize = new Dimension(120, 30);
             controles.setPreferredSize(controlSize);
             controles.setMinimumSize(controlSize);
             controles.setMaximumSize(controlSize);
@@ -54,7 +54,7 @@ public class AffichageReseau extends JPanel {
             JButton boutonMoins = new JButton("-");
             boutonMoins.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             // Augmenter la largeur du bouton : maintenant 80 px de large, 30 px de haut
-            Dimension btnSize = new Dimension(80, 30);
+            Dimension btnSize = new Dimension(50, 30);
             boutonMoins.setPreferredSize(btnSize);
             boutonMoins.setMinimumSize(btnSize);
             boutonMoins.setMaximumSize(btnSize);
@@ -89,7 +89,7 @@ public class AffichageReseau extends JPanel {
             
             // Pour chaque neurone, on l'ajoute et on insère un espace fixe après
             for (int j = 0; j < modele.taille(i); j++){
-                JLabel neurone = new JLabel(new ImageIcon(getClass().getResource("neurone.png")));
+                JLabel neurone = new JLabel(new ImageIcon(getClass().getResource("assets/neurone.png")));
                 neurone.setAlignmentX(Component.CENTER_ALIGNMENT);
                 panelNeurones.add(neurone);
                 panelNeurones.add(Box.createVerticalStrut(10));
