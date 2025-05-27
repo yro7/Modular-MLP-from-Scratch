@@ -9,20 +9,15 @@ import java.awt.*;
  */
 public class GUI extends JFrame {
     public GUI() {
-        Data data = new Data();
-        Modele modele = new Modele();
+        JTabbedPane onglet = new JTabbedPane();
 
-        ControleurReseau controle = new ControleurReseau(modele, data);
-        AffichageReseau vueReseau = new AffichageReseau(modele);
-
-        this.getContentPane().setLayout(new BorderLayout());
-        this.getContentPane().add(vueReseau, BorderLayout.CENTER);
-        this.getContentPane().add(controle, BorderLayout.NORTH);
+        OngletClassification ongletclassification = new OngletClassification();
+        onglet.addTab("Onglet 1", ongletclassification);
         
-        AffichageData vueData = new AffichageData(data);
+        Predicteurchiffre onglet2 = new Predicteurchiffre();
+        onglet.addTab("Onglet 2", onglet2.getFrame());
 
-        this.getContentPane().add(vueData, BorderLayout.WEST);
-
+        this.getContentPane().add(onglet);
         this.setSize(new Dimension(1280,720));
         this.setLocationRelativeTo(null);
         this.setVisible(true);
