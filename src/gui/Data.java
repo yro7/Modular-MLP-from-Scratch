@@ -1,8 +1,9 @@
 package gui;
 
+import java.util.Observable;
 import java.util.Random;
 
-public class Data {
+public class Data extends Observable {
 
     final static int NBPOINTS = 1000;
     
@@ -86,32 +87,35 @@ public class Data {
         } else if (forme.equals("carres")) {
             // carre en (3,3) label=0
             for (int i=0; i < NBPOINTS/4; i++) {
-                double x = rd.nextDouble() * 6 + 3;
-                double y = rd.nextDouble() * 6 + 3;
+                double x = rd.nextDouble() * 6;
+                double y = rd.nextDouble() * 6;
                 this.addElement(x, y, 0);
             }
             // carre en (-3,-3) label=0
             for (int i=0; i < NBPOINTS/4; i++) {
-                double x = rd.nextDouble() * 6 - 3;
-                double y = rd.nextDouble() * 6 - 3;
+                double x = rd.nextDouble() * 6 - 6;
+                double y = rd.nextDouble() * 6 - 6;
                 this.addElement(x, y, 0);
             }
             // carre en (-3,3) label=1
             for (int i=0; i < NBPOINTS/4; i++) {
-                double x = rd.nextDouble() * 6 - 3;
-                double y = rd.nextDouble() * 6 + 3;
+                double x = rd.nextDouble() * 6 - 6;
+                double y = rd.nextDouble() * 6 ;
                 this.addElement(x, y, 1);
             }
             // carre en (3,-3) label=1
             for (int i=0; i < NBPOINTS/4; i++) {
-                double x = rd.nextDouble() * 6 + 3;
-                double y = rd.nextDouble() * 6 - 3;
+                double x = rd.nextDouble() * 6;
+                double y = rd.nextDouble() * 6 - 6;
                 this.addElement(x, y, 1);
             }
         } else {
             System.out.println("forme non reconnue : " + forme);
         }
-
+        
+        // Notify observers of data change // ADDED
+        setChanged(); // ADDED
+        notifyObservers(); // ADDED
     }
 
     public double[][] getData(){
@@ -124,9 +128,13 @@ public class Data {
 
     public void setData(double[][] data){
         this.data = data;
+        setChanged(); // ADDED
+        notifyObservers(); // ADDED
     } 
 
     public void setResult(double[][] result){
         this.result = result;
+        setChanged(); // ADDED
+        notifyObservers(); // ADDED
     } 
 }
