@@ -22,7 +22,6 @@ Trainer mnistTrainer = Trainer.builder()
         .setDataset(mnistDataset)
         .setEpoch(30)
         .setBatchSize(7_000)
-        .setVerbose()
         .build();
 
 // Build and train the MLP
@@ -34,6 +33,7 @@ MLP mnistMLP = MLP.builder(784)
         .build()
         .train(mnistTrainer);
 
+```
 
 ## Installation
 
@@ -42,6 +42,10 @@ Clone the repository:
 git clone https://github.com/your-username/ModularMLP.git
 cd ModularMLP
 ```
+
+## Matrices 
+
+The project
 
 ## Library overhead
 
