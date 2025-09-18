@@ -43,10 +43,6 @@ git clone https://github.com/your-username/ModularMLP.git
 cd ModularMLP
 ```
 
-## Matrices 
-
-The project
-
 ## Library overhead
 
 Here's the call tree of the project, when training a basic MNIST mlp resolver.
