@@ -1,10 +1,19 @@
-# Java Neural Networks from scratch
+# ModularMLP
 
-This project aims to implement Neural Networks algorithms from scratch, as cleanly and modulable as possible.
+**ModularMLP** is a Java library for building and training **Multi-Layer Perceptrons (MLPs) from scratch** with a fully **modular design**. It uses a *builder pattern* for easy configuration of networks and trainers.  
 
-Library overhead
+## Features
 
-Here's the call tree of the project, when training a basic MNIST mlps resolver.
-As expected, the matrix multiplication takes ~95% of CPU time. 
-![image](https://github.com/user-attachments/assets/f9b8339b-b829-4b84-aec5-349e66da833f)
-Note that the application only ran for a few minutes, JIT by the JVM might change results while training larger models.
+- Fully configurable MLPs: number of layers, neurons per layer, activation functions.  
+- Trainers with support for different optimizers (Adam, SGD, etc.) and loss functions (Cross-Entropy, MSE…).  
+- Batch support and training on custom datasets.  
+- Optional regularization: L1, L2, ElasticNet.  
+- Implemented **from scratch**, no heavy external dependencies.  
+- **Modular design**: every component (layer, optimizer, dataset, trainer) can be swapped or extended easily.  
+
+## Installation
+
+Clone the repository:  
+```bash
+git clone https://github.com/your-username/ModularMLP.git
+cd ModularMLP
