@@ -39,7 +39,7 @@ MLP mnistMLP = MLP.builder(784)
 
 Clone the repository:  
 ```bash
-git clone https://github.com/your-username/ModularMLP.git
+git clone https://github.com/yro7/ModularMLP.git
 cd ModularMLP
 ```
 
