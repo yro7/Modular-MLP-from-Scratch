@@ -3,6 +3,8 @@
 **ModularMLP** is a Java library for building and training **Multi-Layer Perceptrons (MLPs) from scratch** with a fully **modular design**. 
 The primary goal of this implementation is to **prioritize simplicity** and ease of use for the end user, allowing the construction and training of complex MLPs with minimal code.
 
+This library is for **educational purposes only** and shouldn't be considered for big networks. More specially, the matrix implementation is particularly inefficient and doesn't uses standard java librairies such as EJML or ND4J.
+
 ## Features
 
 - Fully configurable MLPs: number of layers, neurons per layer, activation functions.  
